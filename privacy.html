@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개인정보 처리방침 — ClaudeQueue</title>
+<meta name="description" content="ClaudeQueue 개인정보 처리방침. 사용자 데이터를 수집하지 않습니다.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171B22'/%3E%3Crect x='7' y='8' width='18' height='3.4' rx='1.7' fill='%23E0805B'/%3E%3Crect x='7' y='14.3' width='13' height='3.4' rx='1.7' fill='%237C8AA5'/%3E%3Crect x='7' y='20.6' width='9' height='3.4' rx='1.7' fill='%23556072'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#F4F6F9; --surface:#FFFFFF; --border:#E2E7EF;
+  --text:#1B2430; --text-dim:#5C6675; --muted:#626D7D; --accent:#A8482A;
+  --run:#16A34A; --error:#DC2626;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1116; --surface:#171B22; --border:#262D38;
+    --text:#E6EAF0; --text-dim:#9AA4B2; --muted:#8B95A5; --accent:#E0805B;
+    --run:#4ADE80; --error:#F87171;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1116; --surface:#171B22; --border:#262D38;
+  --text:#E6EAF0; --text-dim:#9AA4B2; --muted:#8B95A5; --accent:#E0805B;
+  --run:#4ADE80; --error:#F87171;
+}
+:root[data-theme="light"]{
+  --bg:#F4F6F9; --surface:#FFFFFF; --border:#E2E7EF;
+  --text:#1B2430; --text-dim:#5C6675; --muted:#626D7D; --accent:#A8482A;
+  --run:#16A34A; --error:#DC2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:.92em;word-break:break-all}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--border);background:var(--surface)}
+.topbar .wrap{display:flex;align-items:center;height:56px;gap:16px}
+.brand{font-weight:700;font-size:15px}
+.brand .q{color:var(--accent)}
+.back{margin-left:auto;font-size:13.5px;display:inline-flex;align-items:center;min-height:24px;padding:0 8px}
+header.doc{padding:48px 0 28px;border-bottom:1px solid var(--border)}
+h1{font-size:clamp(24px,4vw,34px);letter-spacing:-.02em;font-weight:750}
+.lede{color:var(--text-dim);margin-top:12px;font-size:16px}
+section{padding:30px 0;border-bottom:1px solid var(--border)}
+h2{font-size:19px;font-weight:680;margin-bottom:12px;letter-spacing:-.01em}
+p{color:var(--text-dim)}
+p+p{margin-top:10px}
+.list{list-style:none;display:grid;gap:9px;margin-top:10px}
+.list li{padding-left:22px;position:relative;color:var(--text-dim)}
+.list li::before{position:absolute;left:0;font-weight:700}
+.no li::before{content:"✕";color:var(--error)}
+.yes li::before{content:"✓";color:var(--run)}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin-top:12px;font-size:15px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{color:var(--text-dim);font-family:var(--mono);font-size:13.5px;word-break:break-all}
+.callout{
+  border-left:3px solid var(--accent);border-radius:0 8px 8px 0;
+  padding:14px 16px;background:var(--surface);margin-top:16px;color:var(--text-dim);font-size:15px;
+}
+.callout b{color:var(--text)}
+footer{padding:28px 0 44px;color:var(--muted);font-size:13.5px;text-align:center}
+footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
+@media (max-width:720px){
+  .wrap{padding:0 18px}
+  header.doc{padding:36px 0 24px}
+  .back,footer a{min-height:44px;min-width:44px;justify-content:center;padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <span class="brand">Claude<span class="q">Queue</span></span>
+    <a class="back" href="./">← 홈으로</a>
+  </div>
+</div>
+
+<header class="doc">
+  <div class="wrap">
+    <h1>개인정보 처리방침</h1>
+    <p class="lede">ClaudeQueue는 사용자 개인정보를 수집하지 않습니다.</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>수집하는 데이터</h2>
+    <p><b>없습니다.</b> ClaudeQueue는 사용자 데이터를 외부로 전송하지 않습니다.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>데이터 저장</h2>
+    <p>모든 작업 기록과 설정은 사용자 컴퓨터에만 저장됩니다.</p>
+    <dl class="kv">
+      <dt>저장 위치</dt><dd>~/Library/Application Support/com.doitasap.claudequeue/</dd>
+      <dt>형식</dt><dd>SQLite 데이터베이스</dd>
+      <dt>외부 전송</dt><dd>없음</dd>
+    </dl>
+    <p style="margin-top:12px">
+      데이터베이스 파일과 로그는 소유자만 읽을 수 있도록 권한을 좁혀 저장합니다.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>네트워크 통신</h2>
+    <p>ClaudeQueue가 직접 보내는 요청은 <b>업데이트 확인 한 가지</b>입니다.</p>
+    <dl class="kv">
+      <dt>요청 대상</dt><dd>github.com (릴리스 정보)</dd>
+      <dt>보내는 내용</dt><dd>없음 — 파일을 내려받기만 합니다</dd>
+      <dt>목적</dt><dd>새 버전 존재 여부 확인</dd>
+    </dl>
+    <div class="callout">
+      이 요청에는 <b>사용자를 식별할 수 있는 정보가 담기지 않습니다.</b> 공개된 릴리스 정보
+      파일을 내려받아 현재 버전과 비교할 뿐이며, 사용 기록이나 작업 내용은 포함되지 않습니다.
+      내려받은 업데이트는 서명을 검증한 뒤에만 설치합니다.
+    </div>
+    <p style="margin-top:14px">
+      그 밖에 사용자가 실행한 Claude Code CLI 명령이 발생시키는 통신은 <b>공식 CLI가 수행하는
+      것</b>이며 ClaudeQueue의 통신이 아닙니다.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>인증 정보</h2>
+    <p>ClaudeQueue는 다음을 <b>수행하지 않습니다</b>.</p>
+    <ul class="list no">
+      <li>OAuth 토큰 또는 API 키 읽기</li>
+      <li>인증 정보 저장 또는 전송</li>
+      <li>로컬에 저장된 Claude Code 인증 정보 접근</li>
+    </ul>
+    <p style="margin-top:14px">모든 인증은 Claude Code CLI가 관리합니다.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>기술적 근거</h2>
+    <p>이 방침은 다음 확인에 기반합니다.</p>
+    <ul class="list yes">
+      <li>인증 정보를 다루는 코드 없음 — <code>api_key</code>·<code>token</code>·<code>ANTHROPIC</code> 관련 코드가 존재하지 않습니다</li>
+      <li>네트워크를 쓰는 의존성은 업데이터 하나뿐이며, 그 요청 대상은 위에 명시한 릴리스 정보 파일입니다</li>
+      <li>분석·추적 도구를 포함하지 않습니다</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>문의</h2>
+    <p>
+      개인정보 처리에 관한 질문이나 우려가 있으시면
+      <a href="https://github.com/doitasap/claude-queue-releases/issues">GitHub 이슈</a>로 알려 주십시오.
+      보고하실 때 <b>Privacy</b> 레이블을 달아 주시면 빠르게 확인합니다.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="./">홈</a>
+    <a href="https://github.com/doitasap/claude-queue-releases">GitHub</a>
+    <a href="https://github.com/doitasap/claude-queue-releases/issues">이슈</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root = document.documentElement, saved = null;
+  try { saved = localStorage.getItem('cq-theme'); } catch (e) {}
+  if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+})();
+</script>
+</body>
+</html>

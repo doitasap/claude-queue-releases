@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClaudeQueue — 경로별 Claude Code 명령 대기열</title>
+<meta name="description" content="자리에 없어도, 리셋되는 순간 큐가 대신 일한다. Claude Code 작업을 경로별로 큐에 넣고 순차·예약 실행하는 macOS 앱.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171B22'/%3E%3Crect x='7' y='8' width='18' height='3.4' rx='1.7' fill='%23E0805B'/%3E%3Crect x='7' y='14.3' width='13' height='3.4' rx='1.7' fill='%237C8AA5'/%3E%3Crect x='7' y='20.6' width='9' height='3.4' rx='1.7' fill='%23556072'/%3E%3C/svg%3E">
+<style>
+/* ── 토큰: 라이트 기본 ───────────────────────────────── */
+:root{
+  --bg:#F4F6F9; --surface:#FFFFFF; --elevated:#FFFFFF; --border:#E2E7EF;
+  --text:#1B2430; --text-dim:#5C6675; --muted:#626D7D; --accent:#A8482A; --on-accent:#FFFFFF;
+  --run:#16A34A; --wait:#D08700; --queue:#64748B; --done:#94A3B8; --error:#DC2626;
+  --shadow:0 1px 2px rgba(27,36,48,.06),0 4px 16px rgba(27,36,48,.05);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1116; --surface:#171B22; --elevated:#1E242D; --border:#262D38;
+    --text:#E6EAF0; --text-dim:#9AA4B2; --muted:#8B95A5; --accent:#E0805B; --on-accent:#14181F;
+    --run:#4ADE80; --wait:#F5B544; --queue:#7C8AA5; --done:#556072; --error:#F87171;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1116; --surface:#171B22; --elevated:#1E242D; --border:#262D38;
+  --text:#E6EAF0; --text-dim:#9AA4B2; --muted:#8B95A5; --accent:#E0805B; --on-accent:#14181F;
+  --run:#4ADE80; --wait:#F5B544; --queue:#7C8AA5; --done:#556072; --error:#F87171;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+}
+:root[data-theme="light"]{
+  --bg:#F4F6F9; --surface:#FFFFFF; --elevated:#FFFFFF; --border:#E2E7EF;
+  --text:#1B2430; --text-dim:#5C6675; --muted:#626D7D; --accent:#A8482A; --on-accent:#FFFFFF;
+  --run:#16A34A; --wait:#D08700; --queue:#64748B; --done:#94A3B8; --error:#DC2626;
+  --shadow:0 1px 2px rgba(27,36,48,.06),0 4px 16px rgba(27,36,48,.05);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg); color:var(--text); line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code,kbd{font-family:var(--mono);font-size:.92em}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 바 ─────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--border);
+}
+.topbar .wrap{display:flex;align-items:center;gap:16px;height:56px}
+.brand{font-weight:700;letter-spacing:-.01em;font-size:15px;flex-shrink:0}
+.brand .q{color:var(--accent)}
+.topnav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav a{
+  color:var(--text-dim);font-size:13.5px;padding:8px 10px;border-radius:8px;
+  white-space:nowrap;min-height:32px;display:flex;align-items:center;
+}
+.topnav a:hover{background:var(--surface);color:var(--text);text-decoration:none}
+.tbtn{
+  background:var(--surface);border:1px solid var(--border);color:var(--text-dim);
+  min-width:36px;min-height:36px;border-radius:9px;cursor:pointer;font-size:14px;
+  display:grid;place-items:center;flex-shrink:0;transition:border-color .15s,color .15s;
+}
+.tbtn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── Hero ───────────────────────────────────────────── */
+.hero{padding:64px 0 56px;border-bottom:1px solid var(--border)}
+.hero-grid{display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:center}
+.hero-grid>*{min-width:0}
+.eyebrow{
+  display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;
+  color:var(--accent);border:1px solid var(--border);background:var(--surface);
+  padding:4px 10px;border-radius:999px;margin-bottom:18px;
+}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.2;letter-spacing:-.02em;font-weight:750}
+.lede{font-size:clamp(15px,2vw,17.5px);color:var(--text-dim);margin-top:16px;max-width:34em}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 22px;border-radius:10px;font-weight:600;font-size:15px;
+  min-height:44px;border:1px solid transparent;cursor:pointer;transition:opacity .15s,border-color .15s;
+}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{opacity:.9;text-decoration:none}
+.btn-ghost{background:var(--surface);border-color:var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.req{margin-top:16px;font-size:13.5px;color:var(--muted)}
+.req code{color:var(--text-dim)}
+
+/* ── 앱 목업 ─────────────────────────────────────────── */
+.mock{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  box-shadow:var(--shadow);overflow:hidden;font-size:12.5px;
+}
+.mock-bar{
+  display:flex;align-items:center;gap:6px;padding:10px 12px;
+  border-bottom:1px solid var(--border);background:var(--elevated);
+}
+.mock-bar i{width:10px;height:10px;border-radius:50%;background:var(--border);display:block}
+.mock-bar span{margin-left:8px;color:var(--muted);font-size:11.5px}
+.mock-head{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.ring{
+  width:52px;height:52px;border-radius:50%;flex-shrink:0;
+  background:conic-gradient(var(--accent) 0 62%,var(--border) 62% 100%);
+  display:grid;place-items:center;
+}
+.ring b{
+  width:38px;height:38px;border-radius:50%;background:var(--surface);
+  display:grid;place-items:center;font-size:11.5px;font-weight:700;font-family:var(--mono);
+}
+.mock-head dl dt{font-size:11px;color:var(--muted)}
+.mock-head dl dd{font-size:13px;font-family:var(--mono);color:var(--text)}
+.mock-head dl+dl{margin-top:6px}
+.mock-sec{padding:10px 16px 4px;font-size:11px;color:var(--muted);letter-spacing:.03em}
+.mock-row{
+  display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;
+  padding:9px 16px;border-top:1px solid var(--border);
+}
+.mock-row:first-of-type{border-top:none}
+.n{
+  width:20px;height:20px;border-radius:50%;border:1px solid var(--border);
+  display:grid;place-items:center;font-size:10.5px;color:var(--muted);font-family:var(--mono);
+}
+.mock-row p{min-width:0;font-family:var(--mono);font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mock-row small{display:block;color:var(--muted);font-size:10.5px;font-family:var(--mono)}
+.sub{padding-left:38px !important}
+.sub p::before{content:"↳ ";color:var(--muted)}
+
+/* ── 상태 배지 ───────────────────────────────────────── */
+.badge{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;
+  font-size:11.5px;font-weight:600;white-space:nowrap;border:1px solid transparent;
+}
+.badge .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* 라벨은 본문색으로 읽히게 하고, 상태 구분은 점(비텍스트, 3:1 기준)과 테두리가 맡는다.
+   상태색을 라벨에 직접 쓰면 4.5:1 을 넘기지 못해 색약 사용자에게 읽히지 않는다. */
+.badge{color:var(--text)}
+.b-run{border-color:var(--run)}     .b-run .dot{background:var(--run)}
+.b-wait{border-color:var(--wait)}   .b-wait .dot{background:var(--wait)}
+.b-queue{border-color:var(--queue)} .b-queue .dot{background:var(--queue)}
+.b-done{border-color:var(--done)}   .b-done .dot{background:var(--done)}
+.b-err{border-color:var(--error)}   .b-err .dot{background:var(--error)}
+.b-run .dot{animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor;opacity:1}70%{box-shadow:0 0 0 6px transparent;opacity:.7}100%{box-shadow:0 0 0 0 transparent;opacity:1}}
+
+/* ── 섹션 공통 ───────────────────────────────────────── */
+section{padding:56px 0;border-bottom:1px solid var(--border)}
+.sec-head{margin-bottom:28px}
+.sec-head h2{font-size:clamp(21px,3vw,27px);letter-spacing:-.015em;font-weight:700}
+.sec-head p{color:var(--text-dim);margin-top:8px;max-width:60ch}
+h3{font-size:16.5px;font-weight:650;margin-bottom:8px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+
+/* ── 3분 시작하기 ────────────────────────────────────── */
+.steps{display:grid;gap:16px}
+.step{display:grid;grid-template-columns:32px 1fr;gap:16px;align-items:start}
+.step-n{
+  width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);
+  display:grid;place-items:center;font-weight:700;font-size:14px;font-family:var(--mono);margin-top:2px;
+}
+.step-body{min-width:0}
+.step-body p{color:var(--text-dim);font-size:14.5px}
+
+/* ── 명령 복사 ───────────────────────────────────────── */
+.cmd{
+  display:flex;align-items:center;gap:10px;background:var(--elevated);
+  border:1px solid var(--border);border-radius:8px;padding:9px 10px 9px 14px;margin-top:10px;
+}
+/* flex 자식은 min-width:auto 라 nowrap 내용 너비만큼 부모를 밀어낸다. 0으로 풀어 스크롤에 맡긴다 */
+.cmd code{flex:1;min-width:0;color:var(--text);overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+.cmd code::-webkit-scrollbar{display:none}
+.copy{
+  background:transparent;border:1px solid var(--border);color:var(--text-dim);
+  border-radius:6px;padding:5px 11px;font-size:12px;cursor:pointer;flex-shrink:0;
+  min-height:30px;transition:border-color .15s,color .15s;
+}
+.copy:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── 개념 카드 ───────────────────────────────────────── */
+.concept{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.concept .def{color:var(--text-dim);font-size:14.5px;margin-top:2px}
+.concept .when{
+  margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);
+  font-size:13px;color:var(--muted);
+}
+.concept .when b{color:var(--text-dim);font-weight:600}
+.arrow{text-align:center;color:var(--muted);font-size:13px;padding:12px 0;font-family:var(--mono)}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:660px;font-size:13.5px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{background:var(--elevated);font-weight:650;font-size:12.5px;color:var(--text-dim);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td code{color:var(--accent);white-space:nowrap}
+td.def{color:var(--text-dim)}
+.grp td{background:var(--elevated);font-family:var(--mono);font-weight:600;color:var(--text);font-size:12.5px}
+
+/* ── 콜아웃 ─────────────────────────────────────────── */
+.callout{
+  border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;
+  background:var(--surface);margin-top:18px;font-size:14px;color:var(--text-dim);
+}
+.callout b{color:var(--text)}
+.callout.warn{border-left-color:var(--wait)}
+
+/* ── 목록 ───────────────────────────────────────────── */
+.list{list-style:none;display:grid;gap:9px;margin-top:4px}
+.list li{padding-left:22px;position:relative;color:var(--text-dim);font-size:14.5px}
+.list li::before{position:absolute;left:0;font-weight:700}
+.yes li::before{content:"✓";color:var(--run)}
+.no li::before{content:"✕";color:var(--error)}
+
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px;margin-top:4px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{color:var(--text-dim);font-family:var(--mono);font-size:13px;word-break:break-all}
+
+footer{padding:36px 0 48px;color:var(--muted);font-size:13.5px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;justify-content:center}
+footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 8px}
+
+/* ── 반응형 ─────────────────────────────────────────── */
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .grid3{grid-template-columns:1fr 1fr}
+}
+@media (max-width:720px){
+  .wrap{padding:0 18px}
+  .hero{padding:44px 0 40px}
+  section{padding:44px 0}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .topnav{display:none}
+  .btn,.copy,.tbtn{min-height:44px}
+  .copy{min-width:60px}
+  .tbtn{min-width:44px}
+  footer .wrap a{min-height:44px;padding:0 14px}
+  table{font-size:12.5px}
+  th,td{padding:10px 12px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <span class="brand">Claude<span class="q">Queue</span></span>
+    <nav class="topnav" aria-label="문서 목차">
+      <a href="#start">시작하기</a>
+      <a href="#concept">핵심 개념</a>
+      <a href="#screen">화면 안내</a>
+      <a href="#controls">조작하기</a>
+      <a href="#terminal">터미널</a>
+      <a href="#config">설정</a>
+      <a href="#trouble">문제 해결</a>
+      <a href="#policy">앱 구조</a>
+    </nav>
+    <button class="tbtn" id="theme-toggle" type="button" aria-label="테마 전환">◑</button>
+  </div>
+</div>
+
+<!-- ══ Hero ══════════════════════════════════════════ -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">macOS · 개발자 도구</span>
+      <h1>자리에 없어도,<br>리셋되는 순간 큐가 대신 일한다</h1>
+      <p class="lede">
+        ClaudeQueue는 여러 프로젝트 경로의 Claude Code 작업을 대기열에 넣고
+        순차 실행합니다. 사용 한도에 걸린 작업은 실패로 끝나지 않고 리셋 시각에 스스로 재개됩니다.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/doitasap/claude-queue-releases/releases/latest">macOS용 다운로드</a>
+        <a class="btn btn-ghost" href="#start">3분 만에 시작하기</a>
+      </div>
+      <p class="req">
+        macOS 12 이상 · <a href="https://code.claude.com/docs/en/setup">Claude Code CLI</a> 선설치 필요 —
+        이 앱은 공식 CLI를 실행할 뿐, 자체적으로 Claude를 호출하지 않습니다.
+      </p>
+    </div>
+
+    <div class="mock" aria-hidden="true">
+      <div class="mock-bar"><i></i><i></i><i></i><span>ClaudeQueue</span></div>
+      <div class="mock-head">
+        <div class="ring"><b>62%</b></div>
+        <div>
+          <dl><dt>주간 한도</dt><dd>62% 소진</dd></dl>
+          <dl><dt>다음 리셋까지</dt><dd>02:47:11</dd></dl>
+        </div>
+      </div>
+      <p class="mock-sec">자동 큐 · 순차 실행</p>
+      <div class="mock-row">
+        <span class="n">1</span>
+        <p>/deploy staging<small>~/work/api-server</small></p>
+        <span class="badge b-run"><span class="dot"></span>실행 중</span>
+      </div>
+      <div class="mock-row sub">
+        <span></span>
+        <p>테스트 결과 요약해줘<small>부모 세션 이어받기</small></p>
+        <span class="badge b-queue"><span class="dot"></span>대기</span>
+      </div>
+      <div class="mock-row">
+        <span class="n">2</span>
+        <p>/code-review<small>~/work/web-client</small></p>
+        <span class="badge b-wait"><span class="dot"></span>리셋 대기</span>
+      </div>
+      <p class="mock-sec">대기 · 보류</p>
+      <div class="mock-row">
+        <span class="n">–</span>
+        <p>리팩터링 범위 정리<small>~/work/api-server</small></p>
+        <span class="badge b-done"><span class="dot"></span>완료</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ 왜 필요한가 ═══════════════════════════════════ -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>왜 대기열이 필요한가</h2>
+      <p>Claude Code를 오래 쓰면 마주치는 세 가지 상황이 있습니다.</p>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <h3>한도에 걸려 멈춘다</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          작업 도중 사용 한도에 도달하면 거기서 끝납니다. 리셋 시각에 맞춰 사람이 다시 앉아야 합니다.
+        </p>
+      </div>
+      <div class="card">
+        <h3>순서를 사람이 지킨다</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          여러 프로젝트에 걸친 작업을 하나씩 확인해가며 돌려야 합니다. 앞 작업이 끝났는지 지켜봐야 합니다.
+        </p>
+      </div>
+      <div class="card">
+        <h3>할 일이 흩어진다</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          "나중에 돌릴 것"이 메모장·이슈·머릿속에 나뉘어 남습니다. 정작 여유가 생겼을 때 무엇부터인지 모릅니다.
+        </p>
+      </div>
+    </div>
+    <div class="callout">
+      <b>ClaudeQueue는 이 세 가지를 하나의 대기열로 묶습니다.</b>
+      한도에 걸린 항목은 <span class="badge b-wait"><span class="dot"></span>리셋 대기</span>로 남았다가
+      자동 재개되고, 순서는 큐가 지키며, 확정되지 않은 작업은 별도 목록에 보관됩니다.
+    </div>
+  </div>
+</section>
+
+<!-- ══ 3분 시작하기 ══════════════════════════════════ -->
+<section id="start">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>3분 만에 시작하기</h2>
+      <p>Claude Code CLI가 이미 설치돼 있다면 2단계부터 보시면 됩니다.</p>
+    </div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-n">1</div>
+        <div class="step-body">
+          <h3>Claude Code CLI 설치</h3>
+          <p>세 가지 방법 중 편한 것을 고르시면 됩니다. ClaudeQueue는 이 CLI를 실행합니다.</p>
+          <div class="cmd"><code id="c1">curl -fsSL https://claude.ai/install.sh | bash</code><button class="copy" data-copy="c1" type="button">복사</button></div>
+          <div class="cmd"><code id="c2">brew install --cask claude-code</code><button class="copy" data-copy="c2" type="button">복사</button></div>
+          <div class="cmd"><code id="c3">npm install -g @anthropic-ai/claude-code</code><button class="copy" data-copy="c3" type="button">복사</button></div>
+          <div class="cmd"><code id="c4">claude --version</code><button class="copy" data-copy="c4" type="button">복사</button></div>
+          <p style="margin-top:10px;font-size:13.5px;color:var(--muted)">
+            마지막 명령으로 버전이 출력되면 준비가 끝난 것입니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">2</div>
+        <div class="step-body">
+          <h3>ClaudeQueue 설치 후 첫 실행</h3>
+          <p>
+            DMG를 내려받아 응용 프로그램으로 옮긴 뒤 실행합니다. CLI를 찾지 못하면 앱이 설치 안내
+            화면을 먼저 띄우고, 설치를 마친 뒤 <b>다시 확인</b>을 누르면 넘어갑니다.
+          </p>
+          <p style="margin-top:8px">
+            CLI를 특이한 위치에 설치했다면 설정에서 <code>claude.bin</code>에 절대 경로를 지정하시면 됩니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">3</div>
+        <div class="step-body">
+          <h3>첫 작업 등록</h3>
+          <p>
+            프로젝트 경로를 고르고 실행할 명령을 적은 뒤 큐에 넣습니다.
+            자동 큐에 넣으면 위에서부터 순서대로, 무인으로 실행됩니다.
+          </p>
+          <div class="callout" style="margin-top:12px">
+            아직 확정되지 않은 작업이라면 <b>대기·보류</b>에 먼저 넣어 두십시오.
+            내용을 다듬은 뒤 자동 큐로 승격할 수 있습니다.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ 핵심 개념 ═════════════════════════════════════ -->
+<section id="concept">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>핵심 개념 세 가지</h2>
+      <p>이 셋만 이해하면 나머지는 화면을 보면서 익힐 수 있습니다.</p>
+    </div>
+
+    <h3 style="margin-bottom:14px">① 두 개의 큐</h3>
+    <div class="grid2">
+      <div class="concept">
+        <h3>자동 큐</h3>
+        <p class="def">위에서부터 순서대로 무인 실행됩니다. 앞 항목이 끝나야 다음이 시작합니다.</p>
+        <p class="when"><b>언제 쓰나</b> — 명령이 확정되어 지금 그대로 돌려도 되는 작업</p>
+      </div>
+      <div class="concept">
+        <h3>대기 · 보류</h3>
+        <p class="def">보관·검토용 목록입니다. 여기 있는 항목은 저절로 실행되지 않습니다.</p>
+        <p class="when"><b>언제 쓰나</b> — 문구를 더 다듬어야 하거나, 지금 돌릴지 판단이 안 선 작업</p>
+      </div>
+    </div>
+    <p class="arrow">▲ 승격 &nbsp;/&nbsp; ▼ 강등 — 두 큐 사이는 언제든 옮길 수 있습니다</p>
+
+    <h3 style="margin:32px 0 14px">② 두 종류의 실행 대상</h3>
+    <div class="grid2">
+      <div class="concept">
+        <h3>경로 대상</h3>
+        <p class="def">지정한 프로젝트 디렉터리에서 <b>새 작업</b>을 시작합니다.</p>
+        <p class="when"><b>언제 쓰나</b> — 독립적인 새 작업을 시킬 때</p>
+      </div>
+      <div class="concept">
+        <h3>세션 대상</h3>
+        <p class="def">기존 Claude 세션을 <b>이어서</b> 실행합니다. 앞선 맥락이 유지됩니다.</p>
+        <p class="when"><b>언제 쓰나</b> — 이전 대화의 결과를 놓고 후속 작업을 시킬 때</p>
+      </div>
+    </div>
+
+    <h3 style="margin:32px 0 14px">③ 체인 — 앞 작업을 이어받는 하위 항목</h3>
+    <div class="card">
+      <p style="color:var(--text-dim);font-size:14.5px">
+        항목을 다른 항목 아래로 넣으면 <b>체인</b>이 됩니다. 부모가 완료된 뒤,
+        부모가 쓰던 세션을 이어받아 하위 명령이 실행됩니다.
+        "빌드가 끝나면 그 결과를 요약해줘" 같은 흐름을 사람 개입 없이 만들 수 있습니다.
+      </p>
+      <div class="mock" style="margin-top:16px;max-width:520px" aria-hidden="true">
+        <div class="mock-row">
+          <span class="n">1</span>
+          <p>/deploy staging<small>~/work/api-server</small></p>
+          <span class="badge b-run"><span class="dot"></span>실행 중</span>
+        </div>
+        <div class="mock-row sub">
+          <span></span>
+          <p>배포 로그에서 경고만 뽑아줘<small>부모 세션 이어받기</small></p>
+          <span class="badge b-queue"><span class="dot"></span>대기</span>
+        </div>
+      </div>
+      <div class="callout warn">
+        부모가 <b>실패</b>로 끝나면 하위 항목은 실행되지 않습니다. 앞 단계가 성공했을 때만
+        의미가 있는 후속 작업을 체인으로 묶으십시오.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 화면 안내 ═════════════════════════════════════ -->
+<section id="screen">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>화면 읽는 법</h2>
+      <p>상태는 색만으로 구분하지 않습니다. 항상 색과 라벨이 함께 표시됩니다.</p>
+    </div>
+
+    <h3 style="margin-bottom:12px">상태 다섯 가지</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">상태</th><th scope="col">의미</th><th scope="col">다음에 일어나는 일</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge b-queue"><span class="dot"></span>대기</span></td>
+            <td class="def">큐에서 차례를 기다리는 중</td>
+            <td class="def">앞 항목이 끝나면 시작</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-run"><span class="dot"></span>실행 중</span></td>
+            <td class="def">Claude Code가 지금 돌고 있음</td>
+            <td class="def">완료 또는 실패로 전환</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-wait"><span class="dot"></span>리셋 대기</span></td>
+            <td class="def">사용 한도에 도달해 멈춤 — <b>실패가 아님</b></td>
+            <td class="def">토큰 리셋 시각에 위에서부터 자동 재개</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-done"><span class="dot"></span>완료</span></td>
+            <td class="def">정상 종료</td>
+            <td class="def">하위 체인 항목이 있으면 이어서 실행</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-err"><span class="dot"></span>실패</span></td>
+            <td class="def">오류로 종료</td>
+            <td class="def">하위 체인 항목은 실행되지 않음</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid2" style="margin-top:28px">
+      <div class="card">
+        <h3>사용량 링과 카운트다운</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          주간 한도 소진율을 링으로, 다음 리셋까지 남은 시간을 카운트다운으로 보여 줍니다.
+          같은 정보가 메뉴 막대 아이콘에도 표시되어 창을 닫아 두어도 확인할 수 있습니다.
+          갱신 주기는 설정의 <code>usage_poll_secs</code>를 따릅니다.
+        </p>
+      </div>
+      <div class="card">
+        <h3>프로젝트 탭</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          여러 경로를 오갈 때 현재 프로젝트의 항목만 보이도록 걸러 줍니다.
+          <b>전체 항목 표시</b>를 켜면 모든 경로의 항목을 한 번에 볼 수 있습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 조작 가이드 ══════════════════════════════════ -->
+<section id="controls">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>조작하기</h2>
+      <p>목록에서 항목을 다루는 방법입니다. 마우스로 하는 일과 버튼으로 하는 일이 나뉩니다.</p>
+    </div>
+
+    <h3 style="margin-bottom:12px">끌어서 순서 바꾸기 · 하위로 넣기</h3>
+    <div class="grid2">
+      <div class="card">
+        <h3>순서 바꾸기</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          항목을 위아래로 끌면 실행 순서가 바뀝니다. 자동 큐와 대기·보류 양쪽에서 됩니다.
+        </p>
+        <div class="callout" style="margin-top:12px">
+          끌 수 있는 항목은 <span class="badge b-queue"><span class="dot"></span>대기</span>
+          <span class="badge b-wait"><span class="dot"></span>리셋 대기</span> 두 가지뿐입니다.
+          실행 중이거나 이미 끝난 항목은 순서를 바꿔도 의미가 없어 잠겨 있습니다.
+        </div>
+      </div>
+      <div class="card">
+        <h3>하위로 넣기</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          끌면서 <b>오른쪽으로 밀면</b> 바로 위 항목의 하위가 됩니다. 하위로 들어갈 위치에서는
+          자리 표시가 안쪽으로 들여써져 보입니다.
+        </p>
+        <div class="callout warn" style="margin-top:12px">
+          <b>전체 항목 표시를 켜 두면 끌기가 잠깁니다.</b> 여러 경로가 섞여 보이는 상태라
+          경로를 넘나드는 이동을 막기 위한 것입니다. 프로젝트 탭을 하나 고르면 다시 됩니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h3>하위로 넣을 때 지켜지는 규칙</h3>
+      <p style="color:var(--text-dim);font-size:14.5px;margin-bottom:14px">
+        아무 항목이나 하위가 되지는 않습니다. 아래 조건을 모두 만족해야 들어갑니다.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">조건</th><th scope="col">이유</th></tr></thead>
+          <tbody>
+            <tr><td>끄는 항목이 <b>경로 대상</b>일 것</td><td class="def">세션 대상은 이미 특정 세션에 묶여 있어 부모 세션을 이어받을 수 없습니다</td></tr>
+            <tr><td>바로 위 항목도 <b>경로 대상</b>일 것</td><td class="def">부모가 될 항목이 세션을 새로 만들어야 그 세션을 물려줄 수 있습니다</td></tr>
+            <tr><td>끄는 항목에 <b>하위가 없을 것</b></td><td class="def">한 단계까지만 허용합니다. 손자가 생기면 실행 순서를 예측하기 어려워집니다</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        위 항목이 <b>이미 다른 항목의 하위</b>라면, 그 아래로 들어가지 않고
+        <b>같은 부모의 형제</b>가 됩니다. 단계가 더 깊어지지 않도록 자동으로 조정합니다.
+      </div>
+      <div class="mock" style="margin-top:16px;max-width:560px" aria-hidden="true">
+        <div class="mock-row">
+          <span class="n">1</span>
+          <p>/deploy staging<small>~/work/api-server · 경로 대상</small></p>
+          <span class="badge b-queue"><span class="dot"></span>대기</span>
+        </div>
+        <div class="mock-row sub">
+          <span></span>
+          <p>배포 로그에서 경고만 뽑아줘<small>오른쪽으로 밀어 하위가 된 항목</small></p>
+          <span class="badge b-queue"><span class="dot"></span>대기</span>
+        </div>
+        <div class="mock-row sub">
+          <span></span>
+          <p>경고를 이슈로 정리해줘<small>형제로 붙은 항목 — 단계는 그대로</small></p>
+          <span class="badge b-queue"><span class="dot"></span>대기</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin:32px 0 12px">직접 실행하기</h3>
+    <div class="card">
+      <p style="color:var(--text-dim);font-size:14.5px">
+        차례를 기다리지 않고 지금 돌리고 싶을 때 <b>▶ 버튼</b>을 누릅니다.
+        같은 버튼이지만 항목이 어디에 있느냐에 따라 하는 일이 다릅니다.
+      </p>
+      <div class="table-wrap" style="margin-top:14px">
+        <table>
+          <thead><tr><th scope="col">위치·상태</th><th scope="col">▶ 를 누르면</th></tr></thead>
+          <tbody>
+            <tr><td>자동 큐</td><td class="def">차례를 앞당겨 <b>지금 실행</b>합니다</td></tr>
+            <tr><td>대기 · 보류</td><td class="def">자동 큐로 <b>승격</b>합니다. 바로 실행되지는 않고 큐의 순서를 따릅니다</td></tr>
+            <tr><td><span class="badge b-err"><span class="dot"></span>실패</span> 항목</td><td class="def"><b>재실행</b>합니다</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <b>세션 대상 명령은 같은 세션이 작업 중이면 실행되지 않습니다.</b>
+        한 세션에서 두 작업이 동시에 돌면 대화가 엉키기 때문입니다. 누르면 거부 사유를
+        알려 주므로, 진행 중인 작업이 끝난 뒤 다시 누르시면 됩니다.
+        <b>경로 대상 명령은 매번 새 세션에서 돌아 이 제약이 없습니다</b> — 이미 다른 작업이
+        실행 중이어도 나란히 실행됩니다.
+      </div>
+      <div class="callout">
+        <b>하위 항목에는 평소 ▶ 가 없습니다.</b> 부모가 끝나면 알아서 이어 실행되기 때문입니다.
+        예외는 부모가 실패해 함께 멈춘 하위로, 이때는 부모를 고친 뒤 그 항목만 다시 돌릴 수 있습니다.
+      </div>
+    </div>
+
+    <h3 style="margin:32px 0 12px">버튼 한눈에 보기</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">버튼</th><th scope="col">하는 일</th><th scope="col">보이는 때</th></tr></thead>
+        <tbody>
+          <tr><td><b>▶</b> 실행</td><td class="def">지금 실행 · 승격 · 재실행 (위 표 참고)</td><td class="def">완료되지 않은 항목</td></tr>
+          <tr><td><b>⏸</b> 중지</td><td class="def">실행을 멈추고 대기 상태로 되돌립니다</td><td class="def">실행 중일 때</td></tr>
+          <tr><td><b>▽</b> 내리기</td><td class="def">자동 큐에서 대기·보류로 옮깁니다</td><td class="def">자동 큐 항목</td></tr>
+          <tr><td><b>✎</b> 편집</td><td class="def">명령 내용을 고칩니다</td><td class="def">실행 전</td></tr>
+          <tr><td><b>💬</b> 응답 보기</td><td class="def">그 실행의 결과를 엽니다</td><td class="def">완료된 항목</td></tr>
+          <tr><td><b>≡</b> 세션 전체 이력</td><td class="def">그 세션에서 오간 대화를 전부 봅니다</td><td class="def">세션이 잡힌 항목</td></tr>
+          <tr><td><b>⌘</b> 대화형 실행</td><td class="def">앱 안에서 터미널을 열어 직접 주고받습니다</td><td class="def">경로 대상 항목</td></tr>
+          <tr><td><b>⤺</b> 체인 해제</td><td class="def">하위에서 빼내 독립 항목으로 만듭니다</td><td class="def">하위 항목</td></tr>
+          <tr><td><b>🗑</b> 삭제</td><td class="def">목록에서 지웁니다</td><td class="def">항상</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      명령 글자를 클릭하면 <b>전문</b>이 열립니다. 목록에서는 한 줄로 줄여 보여 주기 때문에
+      긴 명령은 잘려 보입니다.
+    </div>
+  </div>
+</section>
+
+<!-- ══ 대화형 터미널 ════════════════════════════════ -->
+<section id="terminal">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>대화형 터미널과 기록</h2>
+      <p>큐에 맡기기 애매한, 직접 주고받아야 하는 작업을 위한 기능입니다.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>앱 안에서 터미널 열기</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          항목을 대화형으로 열면 앱 안에 터미널이 뜹니다. 평소처럼 주고받다가
+          <b>백그라운드로 계속</b>을 누르면 창을 닫아도 작업이 이어집니다. 다시 열면 재접속됩니다.
+        </p>
+        <div class="callout" style="margin-top:14px">
+          출력이 <code>interactive_idle_secs</code>초 동안 멎으면 <b>입력 대기</b>로 보고 알려 줍니다.
+          기본 8초이며, <code>0</code>으로 두면 이 알림을 끕니다.
+        </div>
+      </div>
+      <div class="card">
+        <h3>트랜스크립트</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          실행이 끝난 항목의 전체 기록을 열어 볼 수 있습니다. 무엇을 물었고 어떻게 답했는지
+          그대로 남아, 자리를 비운 사이 돌아간 작업을 나중에 확인할 수 있습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 설정 ═════════════════════════════════════════ -->
+<section id="config">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>설정 레퍼런스</h2>
+      <p>
+        대부분은 앱 설정 화면에서 바꿀 수 있습니다. 파일을 직접 편집하려면 아래 경로의
+        <code>config.toml</code>을 여십시오.
+      </p>
+    </div>
+
+    <dl class="kv">
+      <dt>설정 파일</dt>
+      <dd>~/Library/Application Support/com.doitasap.claudequeue/config.toml</dd>
+    </dl>
+
+    <div class="callout" style="margin-bottom:20px">
+      <b>잘못 적어도 앱은 뜹니다.</b> 모든 항목에 기본값이 있어 일부만 적어도 되고,
+      파일이 깨졌으면 <code>.bak</code>으로 백업한 뒤 기본값으로 실행합니다.
+      허용 범위를 벗어난 값은 가까운 경계로 자동 보정됩니다.
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">키</th><th scope="col">기본값</th><th scope="col">허용 범위</th><th scope="col">의미</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="4">[general]</td></tr>
+          <tr><td><code>theme</code></td><td><code>"dark"</code></td><td><code>dark</code> · <code>light</code></td><td class="def">앱 테마</td></tr>
+          <tr><td><code>notifications</code></td><td><code>true</code></td><td><code>true</code> · <code>false</code></td><td class="def">완료 · 한도 도달 · 실패 시 데스크톱 알림</td></tr>
+
+          <tr class="grp"><td colspan="4">[claude]</td></tr>
+          <tr><td><code>bin</code></td><td><code>""</code></td><td class="def">절대 경로</td><td class="def">CLI 실행 파일 경로. 비우면 <code>~/.local/bin/claude</code> → <code>PATH</code> 순으로 자동 탐색</td></tr>
+          <tr><td><code>usage_poll_secs</code></td><td><code>60</code></td><td><code>30</code> ~ <code>3600</code></td><td class="def">사용량 조회 주기(초). 메뉴 막대 표시도 이 주기로 갱신</td></tr>
+          <tr><td><code>usage_timeout_secs</code></td><td><code>30</code></td><td><code>5</code> ~ <code>120</code></td><td class="def">사용량 조회 1회 제한시간(초). 초과하면 프로세스를 정리</td></tr>
+          <tr><td><code>interactive_idle_secs</code></td><td><code>8</code></td><td><code>0</code>, 또는 <code>3</code> ~ <code>600</code></td><td class="def">대화형 터미널이 이만큼 출력을 멈추면 입력 대기로 보고 알림. <b>0이면 끔</b></td></tr>
+
+          <tr class="grp"><td colspan="4">[queue]</td></tr>
+          <tr><td><code>tick_secs</code></td><td><code>15</code></td><td><code>5</code> ~ <code>300</code></td><td class="def">자동 큐가 다음 항목을 확인하는 주기(초)</td></tr>
+
+          <tr class="grp"><td colspan="4">[log]</td></tr>
+          <tr><td><code>dir</code></td><td><code>""</code></td><td class="def">절대 경로</td><td class="def">로그 폴더. 비우면 앱 데이터 폴더의 <code>logs</code></td></tr>
+          <tr><td><code>level</code></td><td><code>"info"</code></td><td><code>error</code> · <code>warn</code> · <code>info</code> · <code>debug</code> · <code>trace</code></td><td class="def"><code>RUST_LOG</code> 환경변수가 있으면 그쪽이 우선</td></tr>
+          <tr><td><code>rotation</code></td><td><code>"daily"</code></td><td><code>daily</code> · <code>hourly</code> · <code>never</code></td><td class="def">로그 파일 회전 주기</td></tr>
+          <tr><td><code>max_files</code></td><td><code>14</code></td><td><code>1</code> ~ <code>365</code></td><td class="def">보관할 로그 파일 수. 초과분은 오래된 것부터 삭제</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <b><code>interactive_idle_secs</code>를 너무 짧게 두지 마십시오.</b>
+      실측상 작업이 진행 중일 때도 5.6초가량 출력이 비는 구간이 있어, 기본값을 그보다 넉넉한
+      8초로 잡았습니다. 3초 근처로 낮추면 정상 작업 중에도 입력 대기 알림이 뜰 수 있습니다.
+    </div>
+  </div>
+</section>
+
+<!-- ══ 문제 해결 ═════════════════════════════════════ -->
+<section id="trouble">
+  <div class="wrap">
+    <div class="sec-head"><h2>문제 해결</h2></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3>CLI를 찾지 못한다고 나옵니다</h3>
+      <p style="color:var(--text-dim);font-size:14.5px">
+        앱은 <code>~/.local/bin/claude</code>를 먼저 보고, 없으면 <code>PATH</code>에서 찾습니다.
+        둘 다 해당하지 않는 위치에 설치했다면 설정의 <code>claude.bin</code>에 절대 경로를 직접 적으십시오.
+        터미널에서 <code>which claude</code>로 경로를 확인할 수 있습니다.
+      </p>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3>"대기 중 · 세션 사용 중"에서 진행되지 않습니다</h3>
+      <p style="color:var(--text-dim);font-size:14.5px">
+        같은 Claude 세션을 다른 곳이 이미 쓰고 있다는 뜻입니다. 점유 주체는 세 가지이고,
+        앱이 구분해서 알려 줍니다.
+      </p>
+      <ul class="list" style="margin-top:12px">
+        <li><b>앱 안의 대화형 터미널</b> — 해당 터미널을 종료하면 풀립니다</li>
+        <li><b>큐의 다른 항목</b> — 그 항목이 끝나면 자동으로 이어집니다</li>
+        <li><b>앱 밖의 작업</b> — 다른 터미널이나 백그라운드 에이전트입니다. 주체를 알아낸 경우 이름까지 표시합니다</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>설치 후 "손상되었다"거나 개발자를 확인할 수 없다고 나옵니다</h3>
+      <p style="color:var(--text-dim);font-size:14.5px">
+        공식 배포본은 Apple Developer ID로 서명하고 공증받아 이 경고가 뜨지 않습니다.
+        이 메시지가 보인다면 내려받은 파일이 손상됐거나 공식 배포본이 아닐 수 있으니,
+        <a href="https://github.com/doitasap/claude-queue-releases/releases/latest">GitHub 릴리스</a>에서 다시 받으십시오.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 앱 구조 공시 ═════════════════════════════════ -->
+<section id="policy">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>앱 구조 공시</h2>
+      <p>Anthropic 서드파티 정책 준수를 위해 이 앱의 작동 방식을 명시합니다.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>이 앱이 하는 일</h3>
+        <ul class="list yes">
+          <li>사용자 컴퓨터에 설치된 <b>공식 Claude Code CLI를 프로세스로 실행</b></li>
+          <li>여러 프로젝트 경로의 작업을 큐에 넣고 순차 · 예약 실행</li>
+          <li>메뉴 막대와 창에서 진행 상황 표시</li>
+          <li>새 버전이 있는지 확인 — 릴리스 정보만 내려받으며, 보내는 정보는 없습니다</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>이 앱이 하지 않는 일</h3>
+        <ul class="list no">
+          <li>인증 정보(OAuth 토큰, API 키) 접근</li>
+          <li>인증 정보 저장 또는 전송</li>
+          <li>사용 기록·작업 내용의 외부 전송</li>
+          <li>사용자 데이터 수집 또는 분석</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      모든 인증 · 네트워크 통신 · Claude 호출은 <b>공식 Claude Code CLI가 담당</b>합니다.
+      ClaudeQueue는 그 CLI를 언제 어떤 순서로 실행할지만 관리합니다.
+    </div>
+  </div>
+</section>
+
+<!-- ══ 개인정보 · 플랫폼 ════════════════════════════ -->
+<section id="privacy">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>개인정보와 지원 범위</h2>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>수집하는 데이터가 없습니다</h3>
+        <dl class="kv">
+          <dt>저장 위치</dt><dd>~/Library/Application Support/com.doitasap.claudequeue/</dd>
+          <dt>외부 전송</dt><dd>없음</dd>
+          <dt>제3자 제공</dt><dd>없음</dd>
+        </dl>
+        <p style="margin-top:14px;font-size:14px">
+          기술적 근거를 포함한 상세 내용은 <a href="privacy.html">개인정보 처리방침</a>에 있습니다.
+        </p>
+      </div>
+      <div class="card">
+        <h3>지원 플랫폼</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          현재 <b>macOS 12 이상</b>만 지원합니다. Windows·Linux 지원이 필요하시면
+          <a href="https://github.com/doitasap/claude-queue-releases/issues">GitHub 이슈</a>로 알려 주십시오.
+          요청이 모이면 우선순위를 조정합니다.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>ClaudeQueue</span>
+    <a href="https://github.com/doitasap/claude-queue-releases">GitHub</a>
+    <a href="https://github.com/doitasap/claude-queue-releases/issues">이슈</a>
+    <a href="https://github.com/doitasap/claude-queue-releases/releases/latest">릴리스</a>
+    <a href="privacy.html">개인정보 처리방침</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem('cq-theme'); } catch (e) {}
+  if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+
+  document.getElementById('theme-toggle').addEventListener('click', function(){
+    var dark = getComputedStyle(root).getPropertyValue('--bg').trim().indexOf('#0E') === 0;
+    var next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('cq-theme', next); } catch (e) {}
+  });
+
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var el = document.getElementById(btn.dataset.copy);
+      if (!el) return;
+      navigator.clipboard.writeText(el.textContent).then(function(){
+        btn.textContent = '복사됨';
+        setTimeout(function(){ btn.textContent = '복사'; }, 1200);
+      }).catch(function(){});
+    });
+  });
+})();
+</script>
+</body>
+</html>
