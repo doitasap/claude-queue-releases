@@ -1,0 +1,11 @@
+# 빈 이슈도 열어 둔다. 위 두 템플릿에 들어맞지 않는 제보를 막지 않기 위함이다.
+blank_issues_enabled: true
+
+contact_links:
+  - name: 📖 사용 가이드 먼저 보기
+    url: https://doitasap.github.io/claude-queue-releases/
+    about: 설치·조작 방법과 설정 항목, 자주 겪는 문제의 해결책이 정리돼 있습니다.
+
+  - name: 💬 Claude Code CLI 자체 문제
+    url: https://github.com/anthropics/claude-code/issues
+    about: ClaudeQueue가 아니라 Claude Code CLI 쪽 문제라면 이곳으로 알려주세요.

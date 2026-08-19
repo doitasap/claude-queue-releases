@@ -1,0 +1,17 @@
+name: Issue → Todoist 업무 등록
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-todoist-task:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: doitasap/gh-todoist-action@08e7cb36a6c3be99cfd36ee8de09a92184d7b667 # v1.1.0
+        with:
+          mode: create-task
+          project-name: claude-queue
+          labels: "claude-queue"
+        env:
+          TODOIST_TOKEN: ${{ secrets.TODOIST_API_TOKEN }}

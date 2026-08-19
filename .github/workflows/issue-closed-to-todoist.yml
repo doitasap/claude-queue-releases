@@ -1,0 +1,17 @@
+name: Issue 종료 → Todoist 배포 대기 라벨
+
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  label-todoist-task:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: doitasap/gh-todoist-action@51273b02d37ca5699279b026cb6f839f2f990fa9 # v1.2.0
+        with:
+          mode: label-by-issue
+          project-name: claude-queue
+          labels: "배포 대기"      # 실제 Todoist 라벨명(공백 포함)과 정확히 일치해야 함
+        env:
+          TODOIST_TOKEN: ${{ secrets.TODOIST_API_TOKEN }}
