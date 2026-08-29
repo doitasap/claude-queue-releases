@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ClaudeQueue — 경로별 Claude Code 명령 대기열</title>
-<meta name="description" content="자리에 없어도, 리셋되는 순간 큐가 대신 일한다. Claude Code 작업을 경로별로 큐에 넣고 순차·예약 실행하는 macOS 앱.">
+<meta name="description" content="자리에 없어도, 리셋되는 순간 큐가 대신 일한다. Claude Code 작업을 경로별로 큐에 넣어 돌리는 macOS 앱. 같은 경로는 차례대로, 다른 경로는 함께 실행합니다.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171B22'/%3E%3Crect x='7' y='8' width='18' height='3.4' rx='1.7' fill='%23E0805B'/%3E%3Crect x='7' y='14.3' width='13' height='3.4' rx='1.7' fill='%237C8AA5'/%3E%3Crect x='7' y='20.6' width='9' height='3.4' rx='1.7' fill='%23556072'/%3E%3C/svg%3E">
 <style>
@@ -282,8 +282,9 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <span class="eyebrow">macOS · 개발자 도구</span>
       <h1>자리에 없어도,<br>리셋되는 순간 큐가 대신 일한다</h1>
       <p class="lede">
-        ClaudeQueue는 여러 프로젝트 경로의 Claude Code 작업을 대기열에 넣고
-        순차 실행합니다. 사용 한도에 걸린 작업은 실패로 끝나지 않고 리셋 시각에 스스로 재개됩니다.
+        ClaudeQueue는 여러 프로젝트 경로의 Claude Code 작업을 대기열에 넣고 돌립니다.
+        같은 경로는 차례대로, 다른 경로는 기본 세 곳까지 함께 진행합니다.
+        사용 한도에 걸린 작업은 실패로 끝나지 않고 리셋 시각에 스스로 재개됩니다.
       </p>
       <div class="cta">
         <a class="btn btn-primary" href="https://github.com/doitasap/claude-queue-releases/releases/latest">macOS용 다운로드</a>
@@ -304,7 +305,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <dl><dt>다음 리셋까지</dt><dd>02:47:11</dd></dl>
         </div>
       </div>
-      <p class="mock-sec">자동 큐 · 순차 실행</p>
+      <p class="mock-sec">자동 큐 · 경로별 실행</p>
       <div class="mock-row">
         <span class="n">1</span>
         <p>/deploy staging<small>~/work/api-server</small></p>
@@ -434,7 +435,8 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
     <div class="grid2">
       <div class="concept">
         <h3>자동 큐</h3>
-        <p class="def">위에서부터 순서대로 무인 실행됩니다. 앞 항목이 끝나야 다음이 시작합니다.</p>
+        <p class="def">위에서부터 순서대로 무인 실행됩니다. 같은 경로는 앞 항목이 끝나야 다음이 시작하고,
+        경로가 다르면 기본 세 곳까지 함께 돕니다.</p>
         <p class="when"><b>언제 쓰나</b> — 명령이 확정되어 지금 그대로 돌려도 되는 작업</p>
       </div>
       <div class="concept">
@@ -502,7 +504,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <tr>
             <td><span class="badge b-queue"><span class="dot"></span>대기</span></td>
             <td class="def">큐에서 차례를 기다리는 중</td>
-            <td class="def">앞 항목이 끝나면 시작</td>
+            <td class="def">같은 경로의 앞 항목이 끝나면 시작</td>
           </tr>
           <tr>
             <td><span class="badge b-run"><span class="dot"></span>실행 중</span></td>
@@ -542,6 +544,14 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
         <p style="color:var(--text-dim);font-size:14.5px">
           여러 경로를 오갈 때 현재 프로젝트의 항목만 보이도록 걸러 냅니다.
           <b>전체 항목 표시</b>를 켜면 모든 경로의 항목을 한 번에 볼 수 있습니다.
+        </p>
+      </div>
+      <div class="card">
+        <h3>작업 번호</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          경로 칩 앞의 <code>#12</code> 같은 번호는 항목의 고유 번호입니다. 상태가 바뀌어도
+          그대로 남습니다. 파일이 겹쳤을 때 뜨는 알림이 <b>"작업 #12 와 #15"</b>처럼 이 번호로
+          대상을 가리키므로, 알림에 적힌 번호를 목록에서 그대로 찾으면 됩니다.
         </p>
       </div>
     </div>
@@ -709,8 +719,9 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
     <div class="sec-head">
       <h2>설정 레퍼런스</h2>
       <p>
-        대부분은 앱 설정 화면에서 바꿀 수 있습니다. 파일을 직접 편집하려면 아래 경로의
-        <code>config.toml</code>을 여십시오.
+        설정 화면은 <code>⌘,</code>로 엽니다. 표의 항목 대부분은 거기서 바꿀 수 있고,
+        <b>설정 화면에 없는 네 항목</b>만 아래 경로의 <code>config.toml</code>을 직접 열어 고칩니다.
+        어느 쪽으로 바꾸든 같은 파일에 저장됩니다.
       </p>
     </div>
 
@@ -722,7 +733,14 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
     <div class="callout" style="margin-bottom:20px">
       <b>잘못 적어도 앱은 뜹니다.</b> 모든 항목에 기본값이 있어 일부만 적어도 되고,
       파일이 깨졌으면 <code>.bak</code>으로 백업한 뒤 기본값으로 실행합니다.
-      허용 범위를 벗어난 값은 가까운 경계로 자동 보정됩니다.
+      허용 범위를 벗어난 값은 가까운 경계로 자동 보정됩니다. 보정한 항목은 설정 화면 위쪽에
+      배너로 알려 드립니다.
+    </div>
+
+    <div class="callout warn" style="margin-bottom:20px">
+      <b>파일을 직접 고칠 때는 앱을 끄고 하십시오.</b> 설정 파일은 앱을 켤 때 한 번 읽습니다.
+      실행 중에 고친 내용은 다음 실행에야 반영되고, 그 사이 설정 화면에서 저장 버튼을 누르면
+      화면의 값이 파일을 덮어써 직접 적은 내용이 사라집니다.
     </div>
 
     <div class="table-wrap">
@@ -738,9 +756,15 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <tr><td><code>usage_poll_secs</code></td><td><code>60</code></td><td><code>30</code> ~ <code>3600</code></td><td class="def">사용량 조회 주기(초). 메뉴 막대 표시도 이 주기로 갱신</td></tr>
           <tr><td><code>usage_timeout_secs</code></td><td><code>30</code></td><td><code>5</code> ~ <code>120</code></td><td class="def">사용량 조회 1회 제한시간(초). 초과하면 프로세스를 정리</td></tr>
           <tr><td><code>interactive_idle_secs</code></td><td><code>8</code></td><td><code>0</code>, 또는 <code>3</code> ~ <code>600</code></td><td class="def">대화형 터미널이 이만큼 출력을 멈추면 입력 대기로 보고 알림. <b>0이면 끔</b></td></tr>
+          <tr><td><code>extra_paths</code></td><td><code>[]</code></td><td class="def">절대 경로 목록</td><td class="def">PATH 맨 앞에 추가할 경로입니다. 앱이 로그인 셸에서 PATH를 읽어 보강하지만, 그 조회가 실패하는 환경에서는 <code>node</code> 같은 명령을 찾지 못합니다. 그때 직접 지정하십시오. <b>설정 화면에는 없습니다</b></td></tr>
+          <tr><td><code>external_active_window_secs</code></td><td><code>90</code></td><td><code>10</code> ~ <code>3600</code></td><td class="def">세션 파일이 이 시간 안에 갱신됐으면 다른 곳에서 작업 중인 것으로 봅니다. 짧게 잡으면 오래 걸리는 작업을 놓치고, 길게 잡으면 이미 끝난 세션을 계속 막습니다. <b>설정 화면에는 없습니다</b></td></tr>
 
           <tr class="grp"><td colspan="4">[queue]</td></tr>
           <tr><td><code>tick_secs</code></td><td><code>15</code></td><td><code>5</code> ~ <code>300</code></td><td class="def">자동 큐가 다음 항목을 확인하는 주기(초)</td></tr>
+          <tr><td><code>max_auto_concurrent_runs</code></td><td><code>3</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>전체 경로에 걸쳐</b> 자동 큐가 동시에 돌릴 항목 수입니다. 수동 실행은 세지 않습니다. 자동 큐는 한 경로를 한 건씩 돌리므로 이 값은 곧 동시에 진행되는 경로 수입니다. 너무 올리면 여러 작업이 같은 토큰 한도를 한꺼번에 소진합니다</td></tr>
+          <tr><td><code>max_runs_per_path</code></td><td><code>2</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>같은 경로</b>에서 동시에 허용할 실행 수입니다. 자동과 수동을 <b>합쳐</b> 셉니다. 기본값 2라면 자동 1건이 도는 중에도 같은 경로를 수동으로 한 건 더 띄울 수 있습니다. 다만 두 작업이 같은 파일을 고치면 서로 덮어쓰니, 파일을 건드리는 작업이라면 <code>1</code>로 낮추십시오</td></tr>
+          <tr><td><code>busy_backoff_secs</code></td><td><code>180</code></td><td><code>10</code> ~ <code>3600</code></td><td class="def">세션 사용 중으로 거부된 뒤, 그 세션을 다시 시도하기까지 기다리는 시간. <b>설정 화면에는 없습니다</b></td></tr>
+          <tr><td><code>max_busy_retries</code></td><td><code>3</code></td><td><code>1</code> ~ <code>100</code></td><td class="def">거부를 이 횟수만큼 겪으면 실패로 확정합니다. 제한이 없으면 다른 작업이 세션을 놓지 않는 한 계속 기다리게 됩니다. <b>설정 화면에는 없습니다</b></td></tr>
 
           <tr class="grp"><td colspan="4">[log]</td></tr>
           <tr><td><code>dir</code></td><td><code>""</code></td><td class="def">절대 경로</td><td class="def">로그 폴더. 비우면 앱 데이터 폴더의 <code>logs</code></td></tr>
@@ -751,10 +775,70 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       </table>
     </div>
 
-    <div class="callout warn">
+    <div class="callout" style="margin-bottom:16px">
+      <b>두 실행 상한은 세는 대상이 다릅니다.</b>
+      설정 화면에서는 <b>자동 큐 동시 실행</b>(<code>max_auto_concurrent_runs</code>)과
+      <b>같은 경로 동시 실행</b>(<code>max_runs_per_path</code>)이라는 이름으로 나옵니다.
+      경로가 5개인데 <code>max_auto_concurrent_runs</code>가 3이면, 세 경로가 돌고 나머지 두
+      경로는 차례를 기다립니다. 반면 <code>max_runs_per_path</code>는 한 경로 안에서만 셉니다.
+      <br><br>
+      <b>자동 큐는 한 경로를 한 건씩만 돌립니다.</b> 같은 프로젝트에서 두 작업이 동시에 파일을
+      고치면 서로 덮어쓰기 때문입니다. 따라서 <code>max_runs_per_path</code>를 올려 생기는
+      여유분은 <b>직접 누르는 수동 실행 몫</b>입니다.
+      <br><br>
+      두 값을 서로 맞출 필요는 없습니다. 자동 큐가 상한까지 차 있어도 수동 실행 버튼은
+      그대로 동작합니다.
+    </div>
+
+    <div class="callout warn" style="margin-bottom:16px">
+      <b>같은 파일을 두 작업이 고치면 알려 드립니다.</b>
+      한 경로에서 두 작업이 함께 도는 동안 서로 다른 작업이 같은 파일을 고치면 알림이 뜹니다.
+      <b>다만 이미 벌어진 일을 알려 줄 뿐입니다.</b> 알림이 뜬 시점에는 한쪽이 다른 쪽의 변경을
+      이미 덮어쓴 뒤입니다. 그렇다고 실행을 중간에 끊으면 파일이 어중간한 상태로 남아 손대기가
+      더 어려워지므로, 앱은 작업을 멈추지 않습니다.
+      <br><br>
+      알림을 받으면 그 경로에서 <b>대화형 터미널을 열어 두 작업을 순서대로 다시 지시</b>하십시오.
+      애초에 겹치지 않게 하려면 <code>max_runs_per_path</code>를 <code>1</code>로 두면 됩니다.
+    </div>
+
+    <div class="callout warn" style="margin-bottom:28px">
       <b><code>interactive_idle_secs</code>를 너무 짧게 두지 마십시오.</b>
       실측상 작업이 진행 중일 때도 5.6초가량 출력이 비는 구간이 있어, 기본값을 그보다 넉넉한
       8초로 잡았습니다. 3초 근처로 낮추면 정상 작업 중에도 입력 대기 알림이 뜰 수 있습니다.
+    </div>
+
+    <h3 style="margin-bottom:14px">설정 화면에만 있는 것들</h3>
+    <div class="grid2">
+      <div class="card">
+        <h3>시스템 로그인 시 시작</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          켜 두면 로그인할 때 앱이 메뉴 막대에 떠 자동 큐를 이어서 처리합니다.
+          이 스위치는 <code>config.toml</code>이 아니라 macOS에 직접 등록됩니다.
+          설정 파일에 같은 값을 복제해 두면 시스템 설정에서 해제했을 때 두 값이 어긋나기 때문입니다.
+        </p>
+      </div>
+      <div class="card">
+        <h3>claude 실행 확인</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          <b>확인</b>을 누르면 지정한 실행 파일을 실제로 돌려 보고 버전을 읽어 옵니다.
+          경로만 적어서는 그 파일이 동작하는지 알 수 없어 둔 버튼입니다.
+        </p>
+      </div>
+      <div class="card">
+        <h3>설정 파일 열기 · 초기화</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          <b>폴더 열기</b>는 <code>config.toml</code>이 있는 위치를 Finder로 띄웁니다.
+          <b>초기화</b>는 모든 설정을 기본값으로 되돌립니다. 되돌릴 수 없어 두 번 눌러야 실행되고,
+          큐 항목과 로그는 지우지 않습니다.
+        </p>
+      </div>
+      <div class="card">
+        <h3>↻ 재시작 표시</h3>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          이 표시가 붙은 항목은 저장해도 곧바로 듣지 않고 앱을 다시 켜야 반영됩니다.
+          로그 관련 네 항목이 여기 해당합니다. 나머지는 저장하는 즉시 적용됩니다.
+        </p>
+      </div>
     </div>
   </div>
 </section>
@@ -809,7 +893,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
         <h3>이 앱이 하는 일</h3>
         <ul class="list yes">
           <li>사용자 컴퓨터에 설치된 <b>공식 Claude Code CLI를 프로세스로 실행</b></li>
-          <li>여러 프로젝트 경로의 작업을 큐에 넣고 순차 · 예약 실행</li>
+          <li>여러 프로젝트 경로의 작업을 큐에 넣고 정해진 순서 · 예약 시각에 실행</li>
           <li>메뉴 막대와 창에서 진행 상황 표시</li>
           <li>새 버전이 있는지 확인 — 릴리스 정보만 내려받으며, 보내는 정보는 없습니다</li>
         </ul>
