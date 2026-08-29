@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ClaudeQueue — 경로별 Claude Code 명령 대기열</title>
-<meta name="description" content="자리에 없어도, 리셋되는 순간 큐가 대신 일한다. Claude Code 작업을 경로별로 큐에 넣어 돌리는 macOS 앱. 같은 경로는 차례대로, 다른 경로는 함께 실행합니다.">
+<meta name="description" content="자리에 없어도, 리셋되는 순간 큐가 대신 일한다. Claude Code 작업을 경로별로 큐에 넣어 실행하는 macOS 앱. 같은 경로는 차례대로, 다른 경로는 함께 실행합니다.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171B22'/%3E%3Crect x='7' y='8' width='18' height='3.4' rx='1.7' fill='%23E0805B'/%3E%3Crect x='7' y='14.3' width='13' height='3.4' rx='1.7' fill='%237C8AA5'/%3E%3Crect x='7' y='20.6' width='9' height='3.4' rx='1.7' fill='%23556072'/%3E%3C/svg%3E">
 <style>
@@ -282,7 +282,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <span class="eyebrow">macOS · 개발자 도구</span>
       <h1>자리에 없어도,<br>리셋되는 순간 큐가 대신 일한다</h1>
       <p class="lede">
-        ClaudeQueue는 여러 프로젝트 경로의 Claude Code 작업을 대기열에 넣고 돌립니다.
+        ClaudeQueue는 여러 프로젝트 경로의 Claude Code 작업을 대기열에 넣어 실행합니다.
         같은 경로는 차례대로, 다른 경로는 기본 세 곳까지 함께 진행합니다.
         사용 한도에 걸린 작업은 실패로 끝나지 않고 리셋 시각에 스스로 재개됩니다.
       </p>
@@ -354,7 +354,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <div class="card">
         <h3>할 일이 흩어진다</h3>
         <p style="color:var(--text-dim);font-size:14.5px">
-          "나중에 돌릴 것"이 메모장·이슈·머릿속에 나뉘어 남습니다. 정작 여유가 생겼을 때 무엇부터 해야 할지 알기 어렵습니다.
+          "나중에 실행할 것"이 메모장·이슈·머릿속에 나뉘어 남습니다. 정작 여유가 생겼을 때 무엇부터 해야 할지 알기 어렵습니다.
         </p>
       </div>
     </div>
@@ -436,13 +436,13 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <div class="concept">
         <h3>자동 큐</h3>
         <p class="def">위에서부터 순서대로 무인 실행됩니다. 같은 경로는 앞 항목이 끝나야 다음이 시작하고,
-        경로가 다르면 기본 세 곳까지 함께 돕니다.</p>
-        <p class="when"><b>언제 쓰나</b> — 명령이 확정되어 지금 그대로 돌려도 되는 작업</p>
+        경로가 다르면 기본 세 곳까지 동시에 진행됩니다.</p>
+        <p class="when"><b>언제 쓰나</b> — 명령이 확정되어 지금 그대로 실행해도 되는 작업</p>
       </div>
       <div class="concept">
         <h3>대기 · 보류</h3>
         <p class="def">보관·검토용 목록입니다. 여기 있는 항목은 저절로 실행되지 않습니다.</p>
-        <p class="when"><b>언제 쓰나</b> — 문구를 더 다듬어야 하거나, 지금 돌릴지 판단이 안 선 작업</p>
+        <p class="when"><b>언제 쓰나</b> — 문구를 더 다듬어야 하거나, 지금 실행할지 판단이 안 선 작업</p>
       </div>
     </div>
     <p class="arrow">▲ 승격 &nbsp;/&nbsp; ▼ 강등 — 두 큐 사이는 언제든 옮길 수 있습니다</p>
@@ -508,7 +508,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           </tr>
           <tr>
             <td><span class="badge b-run"><span class="dot"></span>실행 중</span></td>
-            <td class="def">Claude Code가 지금 돌고 있음</td>
+            <td class="def">Claude Code 프로세스가 현재 동작 중임</td>
             <td class="def">완료 또는 실패로 전환</td>
           </tr>
           <tr>
@@ -648,7 +648,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       </div>
       <div class="callout warn">
         <b>세션 대상 명령은 같은 세션이 작업 중이면 실행되지 않습니다.</b>
-        한 세션에서 두 작업이 동시에 돌면 대화가 엉키기 때문입니다. 누르면 거부 사유를
+        한 세션에서 두 작업이 동시에 실행되면 대화가 엉키기 때문입니다. 누르면 거부 사유를
         알려 주므로, 진행 중인 작업이 끝난 뒤 다시 누르시면 됩니다.
         <b>경로 대상 명령은 매번 새 세션에서 실행되므로 이 제약이 없습니다</b> — 이미 다른 작업이
         실행 중이어도 나란히 실행됩니다.
@@ -761,8 +761,8 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
 
           <tr class="grp"><td colspan="4">[queue]</td></tr>
           <tr><td><code>tick_secs</code></td><td><code>15</code></td><td><code>5</code> ~ <code>300</code></td><td class="def">자동 큐가 다음 항목을 확인하는 주기(초)</td></tr>
-          <tr><td><code>max_auto_concurrent_runs</code></td><td><code>3</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>전체 경로에 걸쳐</b> 자동 큐가 동시에 돌릴 항목 수입니다. 수동 실행은 세지 않습니다. 자동 큐는 한 경로를 한 건씩 돌리므로 이 값은 곧 동시에 진행되는 경로 수입니다. 너무 올리면 여러 작업이 같은 토큰 한도를 한꺼번에 소진합니다</td></tr>
-          <tr><td><code>max_runs_per_path</code></td><td><code>2</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>같은 경로</b>에서 동시에 허용할 실행 수입니다. 자동과 수동을 <b>합쳐</b> 셉니다. 기본값 2라면 자동 1건이 도는 중에도 같은 경로를 수동으로 한 건 더 띄울 수 있습니다. 다만 두 작업이 같은 파일을 고치면 서로 덮어쓰니, 파일을 건드리는 작업이라면 <code>1</code>로 낮추십시오</td></tr>
+          <tr><td><code>max_auto_concurrent_runs</code></td><td><code>3</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>전체 경로에 걸쳐</b> 자동 큐가 동시에 실행할 항목 수입니다. 수동 실행은 세지 않습니다. 자동 큐는 한 경로에서 한 건씩 실행하므로 이 값은 곧 동시에 진행되는 경로 수입니다. 너무 올리면 여러 작업이 같은 토큰 한도를 한꺼번에 소진합니다</td></tr>
+          <tr><td><code>max_runs_per_path</code></td><td><code>2</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>같은 경로</b>에서 동시에 허용할 실행 수입니다. 자동과 수동을 <b>합쳐</b> 셉니다. 기본값 2라면 자동 1건이 실행 중이어도 같은 경로를 수동으로 한 건 더 띄울 수 있습니다. 다만 두 작업이 같은 파일을 고치면 서로 덮어쓰니, 파일을 건드리는 작업이라면 <code>1</code>로 낮추십시오</td></tr>
           <tr><td><code>busy_backoff_secs</code></td><td><code>180</code></td><td><code>10</code> ~ <code>3600</code></td><td class="def">세션 사용 중으로 거부된 뒤, 그 세션을 다시 시도하기까지 기다리는 시간. <b>설정 화면에는 없습니다</b></td></tr>
           <tr><td><code>max_busy_retries</code></td><td><code>3</code></td><td><code>1</code> ~ <code>100</code></td><td class="def">거부를 이 횟수만큼 겪으면 실패로 확정합니다. 제한이 없으면 다른 작업이 세션을 놓지 않는 한 계속 기다리게 됩니다. <b>설정 화면에는 없습니다</b></td></tr>
 
@@ -779,10 +779,10 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <b>두 실행 상한은 세는 대상이 다릅니다.</b>
       설정 화면에서는 <b>자동 큐 동시 실행</b>(<code>max_auto_concurrent_runs</code>)과
       <b>같은 경로 동시 실행</b>(<code>max_runs_per_path</code>)이라는 이름으로 나옵니다.
-      경로가 5개인데 <code>max_auto_concurrent_runs</code>가 3이면, 세 경로가 돌고 나머지 두
+      경로가 5개인데 <code>max_auto_concurrent_runs</code>가 3이면, 세 경로가 진행되고 나머지 두
       경로는 차례를 기다립니다. 반면 <code>max_runs_per_path</code>는 한 경로 안에서만 셉니다.
       <br><br>
-      <b>자동 큐는 한 경로를 한 건씩만 돌립니다.</b> 같은 프로젝트에서 두 작업이 동시에 파일을
+      <b>자동 큐는 한 경로에서 한 건씩만 실행합니다.</b> 같은 프로젝트에서 두 작업이 동시에 파일을
       고치면 서로 덮어쓰기 때문입니다. 따라서 <code>max_runs_per_path</code>를 올려 생기는
       여유분은 <b>직접 누르는 수동 실행 몫</b>입니다.
       <br><br>
@@ -792,7 +792,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
 
     <div class="callout warn" style="margin-bottom:16px">
       <b>같은 파일을 두 작업이 고치면 알려 드립니다.</b>
-      한 경로에서 두 작업이 함께 도는 동안 서로 다른 작업이 같은 파일을 고치면 알림이 뜹니다.
+      한 경로에서 두 작업이 함께 실행되는 동안 서로 다른 작업이 같은 파일을 고치면 알림이 뜹니다.
       <b>다만 이미 벌어진 일을 알려 줄 뿐입니다.</b> 알림이 뜬 시점에는 한쪽이 다른 쪽의 변경을
       이미 덮어쓴 뒤입니다. 그렇다고 실행을 중간에 끊으면 파일이 어중간한 상태로 남아 손대기가
       더 어려워지므로, 앱은 작업을 멈추지 않습니다.
@@ -820,7 +820,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <div class="card">
         <h3>claude 실행 확인</h3>
         <p style="color:var(--text-dim);font-size:14.5px">
-          <b>확인</b>을 누르면 지정한 실행 파일을 실제로 돌려 보고 버전을 읽어 옵니다.
+          <b>확인</b>을 누르면 지정한 실행 파일을 실제로 실행해 보고 버전을 읽어 옵니다.
           경로만 적어서는 그 파일이 동작하는지 알 수 없어 둔 버튼입니다.
         </p>
       </div>
