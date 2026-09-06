@@ -762,7 +762,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <tr class="grp"><td colspan="4">[queue]</td></tr>
           <tr><td><code>tick_secs</code></td><td><code>15</code></td><td><code>5</code> ~ <code>300</code></td><td class="def">자동 큐가 다음 항목을 확인하는 주기(초)</td></tr>
           <tr><td><code>max_auto_concurrent_runs</code></td><td><code>3</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>전체 경로에 걸쳐</b> 자동 큐가 동시에 실행할 항목 수입니다. 수동 실행은 세지 않습니다. 자동 큐는 한 경로에서 한 건씩 실행하므로 이 값은 곧 동시에 진행되는 경로 수입니다. 너무 올리면 여러 작업이 같은 토큰 한도를 한꺼번에 소진합니다</td></tr>
-          <tr><td><code>max_runs_per_path</code></td><td><code>2</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>같은 경로</b>에서 동시에 허용할 실행 수입니다. 자동과 수동을 <b>합쳐</b> 셉니다. 기본값 2라면 자동 1건이 실행 중이어도 같은 경로를 수동으로 한 건 더 띄울 수 있습니다. 다만 두 작업이 같은 파일을 고치면 서로 덮어쓰니, 파일을 건드리는 작업이라면 <code>1</code>로 낮추십시오</td></tr>
+          <tr><td><code>max_runs_per_path</code></td><td><code>2</code></td><td><code>1</code> ~ <code>20</code></td><td class="def"><b>같은 경로</b>에서 동시에 허용할 실행 수입니다. 자동과 수동을 <b>합쳐</b> 셉니다. 기본값 2라면 자동 1건이 실행 중이어도 같은 경로를 수동으로 한 건 더 띄울 수 있습니다. 큐는 파일을 고칠 때 확인을 묻지 않아, 두 작업이 같은 파일에 손대면 한쪽 변경이 그대로 덮어써집니다. 파일을 건드리는 작업이라면 <code>1</code>로 낮추십시오</td></tr>
           <tr><td><code>busy_backoff_secs</code></td><td><code>180</code></td><td><code>10</code> ~ <code>3600</code></td><td class="def">세션 사용 중으로 거부된 뒤, 그 세션을 다시 시도하기까지 기다리는 시간. <b>설정 화면에는 없습니다</b></td></tr>
           <tr><td><code>max_busy_retries</code></td><td><code>3</code></td><td><code>1</code> ~ <code>100</code></td><td class="def">거부를 이 횟수만큼 겪으면 실패로 확정합니다. 제한이 없으면 다른 작업이 세션을 놓지 않는 한 계속 기다리게 됩니다. <b>설정 화면에는 없습니다</b></td></tr>
 
@@ -792,13 +792,15 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
 
     <div class="callout warn" style="margin-bottom:16px">
       <b>같은 파일을 두 작업이 고치면 알려 드립니다.</b>
-      한 경로에서 두 작업이 함께 실행되는 동안 서로 다른 작업이 같은 파일을 고치면 알림이 뜹니다.
+      큐는 파일을 고칠 때 확인을 묻지 않습니다. 그래서 한 경로에서 두 작업이 함께 실행되는 동안
+      서로 다른 작업이 같은 파일에 손대면 한쪽 변경이 그대로 덮어써집니다. 그때 앱이 알림을 띄웁니다.
       <b>다만 이미 벌어진 일을 알려 줄 뿐입니다.</b> 알림이 뜬 시점에는 한쪽이 다른 쪽의 변경을
       이미 덮어쓴 뒤입니다. 그렇다고 실행을 중간에 끊으면 파일이 어중간한 상태로 남아 손대기가
       더 어려워지므로, 앱은 작업을 멈추지 않습니다.
       <br><br>
       알림을 받으면 그 경로에서 <b>대화형 터미널을 열어 두 작업을 순서대로 다시 지시</b>하십시오.
-      애초에 겹치지 않게 하려면 <code>max_runs_per_path</code>를 <code>1</code>로 두면 됩니다.
+      애초에 겹치지 않게 하려면 설정의 <b>같은 경로 동시 실행</b>(<code>max_runs_per_path</code>)을
+      <code>1</code>로 두면 됩니다.
     </div>
 
     <div class="callout warn" style="margin-bottom:28px">
