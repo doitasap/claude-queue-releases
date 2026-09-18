@@ -111,6 +111,16 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
     <p style="margin-top:12px">
       데이터베이스 파일과 로그는 소유자만 읽을 수 있도록 권한을 좁혀 저장합니다.
     </p>
+    <p style="margin-top:12px">
+      처음 실행할 때 묻는 statusline 연결에 동의한 경우에는 같은 폴더의 <code>statusline/</code>
+      아래에 사용량 스냅샷과 원래 statusline 설정 백업을 소유자만 읽을 수 있게 저장합니다.
+      이 파일들도 사용자 컴퓨터 밖으로 보내지 않습니다.
+    </p>
+    <p style="margin-top:12px">
+      사용량 스냅샷에는 Claude Code가 statusline에 넘기는 입력 JSON이 통째로 저장됩니다. 여기에는
+      작업 폴더 경로(cwd), 세션 ID, 대화 기록 파일 경로(transcript_path), 모델 이름이 들어 있을 수
+      있습니다. ClaudeQueue는 그중 사용량 한도(<code>rate_limits</code>) 값만 읽습니다.
+    </p>
   </div>
 </section>
 
@@ -145,6 +155,10 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
       <li>로컬에 저장된 Claude Code 인증 정보 접근</li>
     </ul>
     <p style="margin-top:14px">모든 인증은 Claude Code CLI가 관리합니다.</p>
+    <p style="margin-top:14px">
+      사용량 조회에도 OAuth 토큰, claude.ai 쿠키, macOS 키체인을 쓰지 않습니다. 대신 Claude
+      Code statusline이 넘겨주는 값을, 처음 실행할 때 묻는 statusline 연결에 동의했을 때만 읽습니다.
+    </p>
   </div>
 </section>
 
