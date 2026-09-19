@@ -193,6 +193,7 @@ Rust 558 개, npm 패키지의 라이선스를 전수 조회한 결과 GPL·AGPL
 | `html2canvas` | 1.4.1 | MIT | Copyright (c) 2012 Niklas von Hertzen |
 | `iobuffer` | 5.4.0 | MIT | Copyright (c) 2015 Michaël Zasso |
 | `jspdf` | 4.2.1 | MIT | Copyright<br>(c) 2010-2025 James Hall, https://github.com/MrRio/jsPDF<br>(c) 2015-2025 yWorks GmbH, https://www.yworks.com/ |
+| `marked` | 18.0.13 | MIT | Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/)<br>Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/)<br>(Markdown 원 고지는 아래 참조) |
 | `pako` | 2.2.0 | `MIT AND Zlib` | Copyright (C) 2014-2017 by Vitaly Puzrin and Andrei Tuputcyn (Zlib 부분은 4.2 참조) |
 | `performance-now` | 2.1.0 | MIT | Copyright (c) 2013 Braveg1rl |
 | `raf` | 3.4.1 | MIT | Copyright 2013 Chris Dickinson `<chris@neversaw.us>` |
@@ -211,6 +212,9 @@ Rust 558 개, npm 패키지의 라이선스를 전수 조회한 결과 GPL·AGPL
   `LICENSE.spdx` 만 동봉한다. 위 저작권 줄은 그 파일의 `PackageCopyrightText` 값이다.
 - `rgbcolor` 의 `FEEL-FREE.md` 는 라이선스 조건이 아니라 저자의 자유 이용 안내문이므로,
   선택지 중 조건이 명확한 MIT 를 택하고 `LICENSE.md` 의 저작권 줄을 실었다.
+- `marked` 의 `LICENSE` 는 MIT 고지("## Marked") 뒤에 John Gruber 의 원본 Markdown 고지
+  ("## Markdown", BSD 형식)를 함께 싣는다. 이 고지는 바이너리 배포 시에도 재현을 요구하므로 아래
+  MIT 허가 고지 다음에 원문 그대로 옮겼다.
 
 위 패키지에 공통으로 적용되는 MIT 허가 고지 전문을 한 번만 싣는다. 각 패키지의 저작권 고지는
 위 표의 해당 줄로 갈음한다.
@@ -233,6 +237,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+```
+
+`marked` 의 `LICENSE` 에 동봉된 Markdown 고지 원문은 다음과 같다.
+
+```
+Copyright © 2004, John Gruber
+http://daringfireball.net/
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name “Markdown” nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+This software is provided by the copyright holders and contributors “as is” and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the copyright owner or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 ```
 
 ### 4.2 pako 의 Zlib 부분
