@@ -2,6 +2,8 @@
 
 경로별 Claude Code 명령 대기열 데스크톱 앱 (macOS)
 
+[![GitHub stars](https://img.shields.io/github/stars/doitasap/claude-queue-releases?style=social)](https://github.com/doitasap/claude-queue-releases)
+
 **[다운로드 및 사용 가이드 →](https://doitasap.github.io/claude-queue-releases/)**
 
 ---
