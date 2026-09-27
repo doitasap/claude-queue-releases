@@ -31,6 +31,7 @@ assignees: ""
 
 - **macOS 버전**: (예: macOS 14.5 Sonoma)
 - **ClaudeQueue 버전**: (예: v0.1.0 — 메뉴 막대 → 정보에서 확인)
+- **아키텍처**: (예: arm64 / x86_64)
 - **Claude Code CLI 버전**: (터미널에서 `claude --version` 실행 결과)
 - **실행 대상**: (경로 대상 / 세션 대상 / 하위 항목 중 해당하는 것)
 

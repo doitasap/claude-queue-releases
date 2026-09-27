@@ -32,3 +32,4 @@ assignees: ""
 
 - **macOS 버전**: (예: macOS 14.5 Sonoma)
 - **ClaudeQueue 버전**: (예: v0.1.0)
+- **아키텍처**: (예: arm64 / x86_64)
