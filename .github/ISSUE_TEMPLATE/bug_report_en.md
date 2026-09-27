@@ -22,7 +22,7 @@ List the steps that lead to the problem.
 Example:
 1. Picked a project path and added a command to the auto queue.
 2. The next item did not start after the previous one finished.
-3. Pressing ▶ only showed the "waiting · session in use" notice.
+3. Pressing ▶ only showed the "Waiting · the session is in use" notice.
 
 ---
 
