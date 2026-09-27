@@ -96,6 +96,11 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
   <div class="wrap">
     <h2>수집하는 데이터</h2>
     <p><b>없습니다.</b> ClaudeQueue는 사용자 데이터를 외부로 전송하지 않습니다.</p>
+    <p style="margin-top:12px">
+      메뉴에서 <b>버그 제보</b>나 <b>기능 요청</b>을 누르면 GitHub의 새 이슈 화면이 브라우저에서 열립니다.
+      이때 주소에는 앱 버전, macOS 버전, 아키텍처 세 가지만 담기고 경로나 큐 내용, 로그는 담기지 않습니다.
+      링크를 여는 순간 이 세 값이 주소에 담겨 GitHub으로 전달되고, 이슈로 등록할지는 GitHub 화면에서 직접 정합니다.
+    </p>
   </div>
 </section>
 
@@ -106,7 +111,7 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
     <dl class="kv">
       <dt>저장 위치</dt><dd>~/Library/Application Support/com.doitasap.claudequeue/</dd>
       <dt>형식</dt><dd>SQLite 데이터베이스</dd>
-      <dt>외부 전송</dt><dd>없음</dd>
+      <dt>외부 전송</dt><dd>없음 (제보 링크를 열 때 주소에 담겨 GitHub으로 가는 환경 정보는 위 설명 참고)</dd>
     </dl>
     <p style="margin-top:12px">
       데이터베이스 파일과 로그는 소유자만 읽을 수 있도록 권한을 좁혀 저장합니다.
