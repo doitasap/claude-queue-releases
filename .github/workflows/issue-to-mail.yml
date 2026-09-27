@@ -1,0 +1,73 @@
+name: Issue → 메일 알림
+
+on:
+  issues:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      # 이슈 제목·본문은 외부 입력이라 run 스크립트나 ${{ }} 식에 직접 끼우지 않는다(스크립트 주입 방지).
+      # 환경 변수로만 넘기고, 본문은 파일로 만들어 발송 액션이 file:// 로 읽게 한다.
+      - name: 메일 제목·본문 만들기
+        id: mail
+        env:
+          ISSUE: ${{ toJSON(github.event.issue) }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_APP_PASSWORD: ${{ secrets.MAIL_APP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: |
+          if [ -z "$MAIL_USERNAME" ] || [ -z "$MAIL_APP_PASSWORD" ] || [ -z "$MAIL_TO" ]; then
+            echo "::warning::MAIL_USERNAME·MAIL_APP_PASSWORD·MAIL_TO 중 비어 있는 값이 있어 메일 알림을 건너뜁니다"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # 분류는 템플릿이 붙이는 라벨이 먼저, 라벨이 없으면 템플릿 제목 접두어로 한다.
+          echo "$ISSUE" | jq -r '
+            def kind:
+              ([.labels[].name]) as $l
+              | if ($l | index("bug")) or (.title | test("^\\[(버그|Bug)\\]"; "i")) then "버그 신고"
+                elif ($l | index("feature-request")) or (.title | test("^\\[(기능 요청|Feature request)\\]"; "i")) then "기능 요청"
+                else "기타" end;
+            "[ClaudeQueue] \(kind) #\(.number) — \(.title | gsub("[\r\n]+"; " "))"
+          ' > subject.txt
+
+          # 앱이 채우는 환경 정보 줄(한/영)에서 값만 뽑는다. 사용자가 비워 두면 (미기재).
+          # jq 1.7 의 ^·$ 는 줄이 아니라 문자열 전체 기준이라 줄 시작은 (?:^|\n), 값은 [^\r\n]* 로 잡는다.
+          echo "$ISSUE" | jq -r '
+            (.body // "") as $b
+            | def pick($re): ([$b | match($re) | .captures[0].string | sub("^\\s+"; "") | sub("\\s+$"; "")] | first) as $v
+                | if ($v // "") == "" then "(미기재)" else $v end;
+            [
+              "■ 접수 시각: \(.created_at)",
+              "■ 작성자: \(.user.login)",
+              "■ 라벨: \([.labels[].name] | if length == 0 then "(없음)" else join(", ") end)",
+              "■ 앱 버전: \(pick("(?:^|\\n)- \\*\\*ClaudeQueue (?:버전|version)\\*\\*:[ \\t]*([^\\r\\n]*)"))",
+              "■ macOS: \(pick("(?:^|\\n)- \\*\\*macOS (?:버전|version)\\*\\*:[ \\t]*([^\\r\\n]*)"))",
+              "■ 아키텍처: \(pick("(?:^|\\n)- \\*\\*(?:아키텍처|Architecture)\\*\\*:[ \\t]*([^\\r\\n]*)"))",
+              "■ 이슈 링크: \(.html_url)",
+              "",
+              "■ 본문",
+              $b
+            ] | join("\n")
+          ' > mail.txt
+
+          echo "subject=$(cat subject.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Gmail 로 발송
+        if: steps.mail.outputs.skip != 'true'
+        uses: dawidd6/action-send-mail@67ce3558d613188179559c61d3565140cf389968 # v22
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_APP_PASSWORD }}
+          from: ClaudeQueue Issues <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.MAIL_TO }}
+          subject: ${{ steps.mail.outputs.subject }}
+          body: file://mail.txt
