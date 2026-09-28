@@ -1037,8 +1037,24 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <tr><td><code>level</code></td><td><code>"info"</code></td><td><code>error</code> · <code>warn</code> · <code>info</code> · <code>debug</code> · <code>trace</code></td><td class="def"><code>RUST_LOG</code> 환경변수가 있으면 그쪽이 우선</td></tr>
           <tr><td><code>rotation</code></td><td><code>"daily"</code></td><td><code>daily</code> · <code>hourly</code> · <code>never</code></td><td class="def">로그 파일 회전 주기</td></tr>
           <tr><td><code>max_files</code></td><td><code>14</code></td><td><code>1</code> ~ <code>365</code></td><td class="def">보관할 로그 파일 수. 초과분은 오래된 것부터 삭제</td></tr>
+
+          <tr class="grp"><td colspan="4">[retention]</td></tr>
+          <tr><td><code>compress_after_days</code></td><td><code>30</code></td><td><code>0</code>, 또는 <code>1</code> ~ <code>3650</code></td><td class="def">끝난 작업의 실행 로그를 완료 후 이 일수가 지나면 압축합니다. <b>0이면 끔</b>. 하루 한 번 도는 정리에서 적용됩니다</td></tr>
+          <tr><td><code>delete_after_days</code></td><td><code>90</code></td><td><code>0</code>, 또는 <code>1</code> ~ <code>3650</code></td><td class="def">끝난 작업의 실행 로그(원문 · 압축본)를 완료 후 이 일수가 지나면 지웁니다. 작업 항목은 남습니다. <b>0이면 끔</b>. 둘 다 켜져 있는데 압축 일수보다 작으면 압축 일수로 올립니다. 7일 미만이면 경고합니다</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="callout" style="margin-bottom:16px">
+      <b>[retention] 은 앱의 실행 로그(응답 보기 · 실시간 로그)에만 적용됩니다.</b>
+      세션 이력은 Claude Code 가 따로 관리하는 세션 파일을 읽어 보여 줍니다.
+      Claude Code 는 기본 설정에서 30일이 지난 세션 파일을 지웁니다(<code>~/.claude/settings.json</code> 의 <code>cleanupPeriodDays</code>).
+      기본값대로라면 완료 후 30~90일 사이에는 세션 이력이 비어 있어도 응답 보기에서 압축된 로그를 볼 수 있습니다.
+      세션 파일이 없으면 세션 이력에 <b>세션 파일이 없습니다</b> 안내가 나옵니다.
+      지금 적용 중인 <code>cleanupPeriodDays</code> 값은 설정 화면 <b>[log]</b> 묶음의 <b>세션 이력 보존 (Claude Code)</b> 행에서 볼 수 있습니다.
+      이 값은 앱에서 바꾸지 않습니다.
+      앱은 <code>~/.claude/settings.json</code> 만 읽습니다. 프로젝트 설정이나 조직에서 관리하는 설정에 <code>cleanupPeriodDays</code> 가 따로 있으면
+      실제 보존 기간과 다를 수 있어, 설정 화면에 이 내용을 경고로 함께 보여 줍니다.
     </div>
 
     <div class="callout" style="margin-bottom:16px">
