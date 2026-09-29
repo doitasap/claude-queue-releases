@@ -1057,7 +1057,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
     <div class="sec-head">
       <h2>설정 레퍼런스</h2>
       <p>
-        설정 화면은 <code>⌘,</code>로 엽니다. 표의 항목 대부분은 거기서 바꿀 수 있고,
+        설정 화면은 <code>⌘,</code>(기본값이며 설정 &gt; 단축키에서 바꿀 수 있습니다)로 엽니다. 표의 항목 대부분은 거기서 바꿀 수 있고,
         <b>설정 화면에 없는 네 항목</b>만 아래 경로의 <code>config.toml</code>을 직접 열어 고칩니다.
         어느 쪽으로 바꾸든 같은 파일에 저장됩니다.
       </p>
@@ -1115,6 +1115,9 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <tr class="grp"><td colspan="4">[retention]</td></tr>
           <tr><td><code>compress_after_days</code></td><td><code>30</code></td><td><code>0</code>, 또는 <code>1</code> ~ <code>3650</code></td><td class="def">끝난 작업의 실행 로그를 완료 후 이 일수가 지나면 압축합니다. <b>0이면 끔</b>. 하루 한 번 도는 정리에서 적용됩니다</td></tr>
           <tr><td><code>delete_after_days</code></td><td><code>90</code></td><td><code>0</code>, 또는 <code>1</code> ~ <code>3650</code></td><td class="def">끝난 작업의 실행 로그(원문 · 압축본)를 완료 후 이 일수가 지나면 지웁니다. 작업 항목은 남습니다. <b>0이면 끔</b>. 둘 다 켜져 있는데 압축 일수보다 작으면 압축 일수로 올립니다. 7일 미만이면 경고합니다</td></tr>
+
+          <tr class="grp"><td colspan="4">[shortcuts]</td></tr>
+          <tr><td><code>project_add</code>, <code>tab_close</code> … <code>terminals</code> (14개)</td><td><code>"Meta+KeyO"</code> 등</td><td class="def"><code>[Ctrl+][Alt+][Shift+][Meta+]&lt;키 이름&gt;</code> 형식 (예: <code>"Alt+Meta+ArrowLeft"</code>). <b>빈 문자열 <code>""</code>은 해제</b></td><td class="def">동작마다 키 조합 하나. 동작 이름과 기본값은 아래 단축키 표를 보십시오. 직접 고친 값이 규칙 위반·중복이면 기본값으로 돌아가거나 해제됩니다. 설정 화면에서 바꾸는 편이 안전합니다</td></tr>
         </tbody>
       </table>
     </div>
@@ -1171,6 +1174,49 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <b><code>interactive_idle_secs</code>를 너무 짧게 두지 마십시오.</b>
       실측상 작업이 진행 중일 때도 5.6초가량 출력이 비는 구간이 있어, 기본값을 그보다 넉넉한
       8초로 잡았습니다. 3초 근처로 낮추면 정상 작업 중에도 입력 대기 알림이 뜰 수 있습니다.
+    </div>
+
+    <h3 style="margin-bottom:14px">단축키</h3>
+    <div class="callout" style="margin-bottom:16px">
+      <b>설정 &gt; 단축키에서 동작마다 키 조합을 바꿉니다.</b>
+      키 칸을 누른 뒤 원하는 조합을 누르면 바뀌고, <b>해제</b>를 누르면 <b>없음</b>이 되며,
+      <b>기본값</b>을 누르면 처음 조합으로 돌아갑니다. 캡처 중에 <code>Esc</code>를 누르면 취소합니다.
+      바꾼 값은 <code>config.toml</code>의 <code>[shortcuts]</code>에 저장되어 앱을 다시 켜도 유지됩니다.
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:16px">
+      <table>
+        <thead><tr><th scope="col">동작</th><th scope="col">기본 조합</th><th scope="col">설명</th></tr></thead>
+        <tbody>
+          <tr><td>프로젝트 추가</td><td><code>⌘O</code></td><td class="def">폴더 선택 창을 열어 프로젝트 경로를 추가합니다</td></tr>
+          <tr><td>현재 탭 닫기</td><td><code>⌘W</code></td><td class="def">활성 프로젝트 탭을 닫습니다. 메뉴의 창 닫기에서는 ⌘W를 뺐고, 메뉴에서 Close Window를 누르면 창은 여전히 트레이로 숨습니다</td></tr>
+          <tr><td>왼쪽 탭 활성화</td><td><code>⌥⌘←</code></td><td class="def">왼쪽 탭으로 옮겨 갑니다</td></tr>
+          <tr><td>오른쪽 탭 활성화</td><td><code>⌥⌘→</code></td><td class="def">오른쪽 탭으로 옮겨 갑니다</td></tr>
+          <tr><td>탭을 왼쪽으로 이동</td><td><code>⇧⌥⌘←</code></td><td class="def">활성 탭의 순서를 한 칸 왼쪽으로 옮깁니다</td></tr>
+          <tr><td>탭을 오른쪽으로 이동</td><td><code>⇧⌥⌘→</code></td><td class="def">활성 탭의 순서를 한 칸 오른쪽으로 옮깁니다</td></tr>
+          <tr><td>경로 선택</td><td><code>⌃1</code></td><td class="def">실행 대상을 경로로 바꿉니다</td></tr>
+          <tr><td>세션 선택</td><td><code>⌃2</code></td><td class="def">실행 대상을 세션으로 바꾸고 세션 목록을 엽니다</td></tr>
+          <tr><td>대화형 선택</td><td><code>⌃3</code></td><td class="def">대화형 버튼을 누른 것과 같습니다. 대화형 터미널을 엽니다</td></tr>
+          <tr><td>스니펫 추가</td><td><code>⇧⌘P</code></td><td class="def">대화형 터미널이 열려 있을 때만 동작합니다. 한 번 더 누르면 패널을 닫습니다</td></tr>
+          <tr><td>전체보기</td><td><code>⇧⌘A</code></td><td class="def">전체보기 체크를 켜고 끕니다</td></tr>
+          <tr><td>설정</td><td><code>⌘,</code></td><td class="def">설정 화면을 엽니다</td></tr>
+          <tr><td>즐겨찾기</td><td><code>⇧⌘B</code></td><td class="def">즐겨찾기 목록을 엽니다. 열려 있으면 닫습니다</td></tr>
+          <tr><td>터미널</td><td><code>⇧⌘T</code></td><td class="def">백그라운드 터미널 목록을 엽니다. 이미 열려 있으면 닫고, 터미널이 없으면 아무 일도 없습니다</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout" style="margin-bottom:28px">
+      <b>동작 규칙</b>
+      <br>· 앱 창에 포커스가 있을 때만 동작합니다. OS 전역 단축키는 지원하지 않습니다.
+      <br>· 입력칸이나 터미널에 포커스가 있으면 <code>⌘</code> · <code>⌃</code> · <code>⌥</code> 조합만 동작합니다.
+      <br>· 다른 동작이 이미 쓰는 조합은 그 행에 경고를 띄우고 저장하지 않습니다.
+      <br>· 모든 조합에 <code>⌘</code> · <code>⌃</code> · <code>⌥</code> 중 하나가 있어야 합니다.
+      <br>· 메뉴·명령창이 쓰는 조합(<code>⌘C</code>/<code>V</code>/<code>X</code>/<code>A</code>/<code>Z</code>, <code>⇧⌘Z</code>, <code>⌘Q</code>/<code>H</code>/<code>M</code>, <code>⌥⌘H</code>, <code>⌃⌘F</code>, <code>⌘Enter</code>·<code>⌃Enter</code>·<code>⌃⌘Enter</code>)은 지정할 수 없습니다.
+      <br>· 명령창 제출 키(<code>Enter</code>=To Do, <code>⌘Enter</code>·<code>⌃Enter</code>·<code>⌃⌘Enter</code>=자동 큐, <code>Shift+Enter</code>=줄바꿈)는 고정이며 설정에서 바꿀 수 없습니다.
+      <br>· 전면 모달이 떠 있으면 동작하지 않습니다. 설정 열기, 스니펫 추가, 터미널 목록 닫기는 예외입니다.
+      <br>· 대화형 터미널이 열려 있는 동안에는 위 예외를 뺀 단축키가 동작하지 않습니다.
+      <br>· 한글 자판이나 IME 상태에서도 물리 키 기준으로 동작합니다.
     </div>
 
     <h3 style="margin-bottom:14px">설정 화면에만 있는 것들</h3>
