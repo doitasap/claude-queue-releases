@@ -751,7 +751,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <tr><td><b>⏸</b> 중지</td><td class="def">실행을 멈추고 <b>To Do</b>(대기 · 보류)로 내립니다. 체인이면 묶인 항목이 함께 내려갑니다. 멈출 때까지 <b>중단 중</b> 배지가 붙고, 멈추지 못하면 알림으로 알려 줍니다</td><td class="def">실행 중일 때</td></tr>
           <tr><td><b>👁</b> 진행 상황 보기</td><td class="def">지금 어디까지 갔는지 읽기 전용으로 엽니다</td><td class="def">자동 큐에서 실행 중일 때</td></tr>
           <tr><td><b>▽</b> 내리기</td><td class="def">자동 큐에서 대기·보류로 옮깁니다</td><td class="def">자동 큐 항목</td></tr>
-          <tr><td><b>✎</b> 편집</td><td class="def">명령 내용을 고칩니다</td><td class="def">실행 전</td></tr>
+          <tr><td><b>✎</b> 편집</td><td class="def">명령 내용을 고칩니다. <b>⌘Enter</b>로 저장하고 <b>Esc</b>로 취소합니다. 한 번에 한 카드만 고칠 수 있습니다</td><td class="def">실행 전</td></tr>
           <tr><td><b>💬</b> 응답 보기</td><td class="def">그 실행의 결과를 엽니다</td><td class="def">완료된 항목</td></tr>
           <tr><td><b>≡</b> 세션 전체 이력</td><td class="def">그 세션에서 오간 대화를 전부 봅니다</td><td class="def">세션이 잡힌 항목</td></tr>
           <tr><td><b>⌘</b> 대화형 실행</td><td class="def">앱 안에서 터미널을 열어 직접 주고받습니다</td><td class="def">경로 대상 항목</td></tr>
@@ -762,7 +762,8 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
     </div>
     <div class="callout">
       명령 글자를 클릭하면 <b>전문</b>이 열립니다. 목록에서는 한 줄로 줄여 보여 주기 때문에
-      긴 명령은 잘려 보입니다.
+      긴 명령은 잘려 보입니다. 전문·응답 보기·설정 창은 <b>Esc</b>나 창 바깥 클릭으로 닫히고,
+      창이 겹쳐 있으면 맨 위 한 겹만 닫힙니다.
     </div>
 
     <h3 style="margin:32px 0 12px">응답을 마크다운으로 볼지 원문으로 볼지</h3>
