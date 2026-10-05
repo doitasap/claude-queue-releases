@@ -963,6 +963,17 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <b>전체 넣기</b>)를 누르면 첨부를 claude 입력줄에 붙여 넣습니다. Enter 는 직접 누르고, 셸 모드(<code>!</code>)에서는
           넣지 마십시오.
         </p>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          터미널에 나온 http/https 주소와 프로그램이 붙인 링크(OSC 8)는 macOS 에서는 <b>Cmd+클릭</b>, Windows/Linux 에서는
+          <b>Ctrl+클릭</b>으로 기본 브라우저에서 열립니다. 그냥 클릭하거나 드래그하면 지금처럼 글자를 선택합니다.
+          맨 텍스트 주소는 <code>http</code>·<code>https</code> 만 열리고, <code>mailto</code> 는 OSC 8 링크일 때만 열립니다.
+          OSC 8 링크에 마우스를 올리면 실제로 열릴 주소를 툴팁으로 보여 줍니다. 열 수 없는 주소는 툴팁도 나오지 않습니다.
+        </p>
+        <p style="color:var(--text-dim);font-size:14.5px">
+          claude 가 화면 폭을 넘는 긴 주소를 여러 줄로 나눠 그려도 하나의 링크로 이어 엽니다. 다만 이어진 줄에 주소 말고
+          다른 글이 섞여 있으면 첫 줄 부분만 링크가 됩니다. 또 주소가 줄 오른쪽 끝에서 끝나고 다음 줄이 두 칸 들여쓴
+          한 단어뿐이면, 그 단어가 주소에 붙어 다른 주소가 열릴 수 있습니다.
+        </p>
         <div class="callout" style="margin-top:14px">
           출력이 <code>interactive_idle_secs</code>초 동안 멈추면 <b>입력 대기</b>로 보고 알려 줍니다.
           기본 8초이며, <code>0</code>으로 두면 이 알림을 끕니다.

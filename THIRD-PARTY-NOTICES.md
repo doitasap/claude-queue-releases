@@ -184,6 +184,7 @@ Rust 570 개, npm 패키지의 라이선스를 전수 조회한 결과 GPL·AGPL
 | `@tauri-apps/plugin-dialog` | 2.7.2 | `MIT OR Apache-2.0` → MIT | 2019-2022, The Tauri Programme in the Commons Conservancy |
 | `@tauri-apps/plugin-opener` | 2.5.4 | `MIT OR Apache-2.0` → MIT | 2019-2022, The Tauri Programme in the Commons Conservancy |
 | `@xterm/addon-fit` | 0.10.0 | MIT | Copyright (c) 2019, The xterm.js authors (https://github.com/xtermjs/xterm.js) |
+| `@xterm/addon-web-links` | 0.11.0 | MIT | Copyright (c) 2017, The xterm.js authors (https://github.com/xtermjs/xterm.js) |
 | `@xterm/xterm` | 5.5.0 | MIT | Copyright (c) 2017-2019, The xterm.js authors (https://github.com/xtermjs/xterm.js)<br>Copyright (c) 2014-2016, SourceLair Private Company (https://www.sourcelair.com)<br>Copyright (c) 2012-2013, Christopher Jeffrey (https://github.com/chjj/) |
 | `base64-arraybuffer` | 1.0.2 | MIT | Copyright (c) 2012 Niklas von Hertzen |
 | `canvg` | 3.0.11 | MIT | Copyright (c) 2010 - present Gabe Lerner (gabelerner@gmail.com) - https://github.com/canvg/canvg |
