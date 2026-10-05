@@ -1046,6 +1046,11 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           줄에서 연 터미널을 닫으면 이 목록으로 다시 돌아옵니다. 종료한 터미널은 목록에서 빠집니다.
         </p>
         <p style="color:var(--text-dim);font-size:14.5px">
+          키보드로도 다룰 수 있습니다. 목록에서 <code>↓</code>를 누르면 첫 줄로 가고, <code>↑</code> <code>↓</code>로 줄 사이를 옮겨
+          <code>Enter</code>로 엽니다. 끝에서 누르면 처음으로 돌아가고, 열 수 없는 줄과 전체 종료 버튼은 건너뜁니다.
+          줄에서 연 터미널에서 <code>⌃←</code>(뒤로)를 누르면 터미널을 백그라운드로 돌리고 이 목록으로 돌아옵니다.
+        </p>
+        <p style="color:var(--text-dim);font-size:14.5px">
           첨부가 있는 줄에는 <b>📎 N</b> 버튼이 함께 보이고(첨부가 없는 줄에는 나타나지 않습니다), 누르면
           별도 뷰어가 열려 그 명령에 붙은 파일·이미지·PDF·링크·메모를 <b>읽기 전용</b>으로 볼 수 있습니다.
           이 뷰어에서는 추가·삭제·순서 변경을 할 수 없습니다 — 첨부를 고치려면 위쪽 「근거 자료 첨부하기」
@@ -1088,6 +1093,11 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
         목록을 아래로 내려도 <b>선택 · 내보내기 바</b>는 위에 붙어 있습니다.
         질문 하나를 열어 응답을 볼 때도 <b>← 목록</b> 버튼이 같은 자리에 남아,
         긴 응답을 읽다가 되돌아가려고 끝까지 올릴 필요가 없습니다.
+      </div>
+      <div class="callout" style="margin-top:12px">
+        키보드로는 <code>↑</code> <code>↓</code>로 질문을 고르고 <code>Enter</code>로 엽니다. 아직 불러올 질문이 남아 있으면
+        맨 아래에서 멈췄다가 다음 묶음이 불러와지면 이어서 내려갑니다. 질문 화면에서 <code>⌃←</code>(뒤로)는
+        <b>← 목록</b>과 같고, 키보드로 열었던 질문이라면 그 줄로 돌아옵니다. 목록에서 한 번 더 누르면 창이 닫힙니다.
       </div>
     </div>
   </div>
@@ -1195,7 +1205,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <tr><td><code>delete_after_days</code></td><td><code>90</code></td><td><code>0</code>, 또는 <code>1</code> ~ <code>3650</code></td><td class="def">끝난 작업의 실행 로그(원문 · 압축본)를 완료 후 이 일수가 지나면 지웁니다. 작업 항목은 남습니다. <b>0이면 끔</b>. 둘 다 켜져 있는데 압축 일수보다 작으면 압축 일수로 올립니다. 7일 미만이면 경고합니다</td></tr>
 
           <tr class="grp"><td colspan="4">[shortcuts]</td></tr>
-          <tr><td><code>project_add</code>, <code>tab_close</code> … <code>terminals</code> (14개)</td><td><code>"Meta+KeyO"</code> 등</td><td class="def"><code>[Ctrl+][Alt+][Shift+][Meta+]&lt;키 이름&gt;</code> 형식 (예: <code>"Alt+Meta+ArrowLeft"</code>). <b>빈 문자열 <code>""</code>은 해제</b></td><td class="def">동작마다 키 조합 하나. 동작 이름과 기본값은 아래 단축키 표를 보십시오. 직접 고친 값이 규칙 위반·중복이면 기본값으로 돌아가거나 해제됩니다. 설정 화면에서 바꾸는 편이 안전합니다</td></tr>
+          <tr><td><code>project_add</code>, <code>tab_close</code> … <code>back</code> (15개)</td><td><code>"Meta+KeyO"</code> 등</td><td class="def"><code>[Ctrl+][Alt+][Shift+][Meta+]&lt;키 이름&gt;</code> 형식 (예: <code>"Alt+Meta+ArrowLeft"</code>). <b>빈 문자열 <code>""</code>은 해제</b></td><td class="def">동작마다 키 조합 하나. 동작 이름과 기본값은 아래 단축키 표를 보십시오. 직접 고친 값이 규칙 위반·중복이면 기본값으로 돌아가거나 해제됩니다. 설정 화면에서 바꾸는 편이 안전합니다</td></tr>
         </tbody>
       </table>
     </div>
@@ -1280,6 +1290,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
           <tr><td>설정</td><td><code>⌘,</code></td><td class="def">설정 화면을 엽니다</td></tr>
           <tr><td>즐겨찾기</td><td><code>⇧⌘B</code></td><td class="def">즐겨찾기 목록을 엽니다. 열려 있으면 닫습니다</td></tr>
           <tr><td>터미널</td><td><code>⇧⌘T</code></td><td class="def">백그라운드 터미널 목록을 엽니다. 이미 열려 있으면 닫고, 터미널이 없으면 아무 일도 없습니다</td></tr>
+          <tr><td>뒤로</td><td><code>⌃←</code></td><td class="def">한 단계씩 빠져나옵니다. 목록에서 연 터미널은 백그라운드로 돌리고 목록으로 돌아가며, 세션 이력의 질문 화면은 <b>← 목록</b>과 같고, 터미널 목록·세션 이력 목록은 닫습니다. 다른 곳에서 연 터미널에서는 터미널로 넘어가 단어 단위 이동으로 쓰입니다</td></tr>
         </tbody>
       </table>
     </div>
@@ -1292,7 +1303,8 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <br>· 모든 조합에 <code>⌘</code> · <code>⌃</code> · <code>⌥</code> 중 하나가 있어야 합니다.
       <br>· 메뉴·명령창이 쓰는 조합(<code>⌘C</code>/<code>V</code>/<code>X</code>/<code>A</code>/<code>Z</code>, <code>⇧⌘Z</code>, <code>⌘Q</code>/<code>H</code>/<code>M</code>, <code>⌥⌘H</code>, <code>⌃⌘F</code>, <code>⌘Enter</code>·<code>⌃Enter</code>·<code>⌃⌘Enter</code>)은 지정할 수 없습니다.
       <br>· 명령창 제출 키(<code>Enter</code>=To Do, <code>⌘Enter</code>·<code>⌃Enter</code>·<code>⌃⌘Enter</code>=자동 큐, <code>Shift+Enter</code>=줄바꿈)는 고정이며 설정에서 바꿀 수 없습니다.
-      <br>· 전면 모달이 떠 있으면 동작하지 않습니다. 설정 열기, 스니펫 추가, 터미널 목록 닫기는 예외입니다.
+      <br>· 전면 모달이 떠 있으면 동작하지 않습니다. 설정 열기, 스니펫 추가, 터미널 목록 닫기, 뒤로는 예외입니다.
+      <br>· macOS 키보드 설정에서 Mission Control의 「왼쪽 스페이스로 이동」(<code>⌃←</code>)이 켜져 있으면 OS가 뒤로 키를 먼저 가져갈 수 있습니다. 그럴 때는 뒤로 키를 다른 조합으로 바꾸십시오.
       <br>· 대화형 터미널이 열려 있는 동안에는 위 예외를 뺀 단축키가 동작하지 않습니다.
       <br>· 한글 자판이나 IME 상태에서도 물리 키 기준으로 동작합니다.
     </div>
