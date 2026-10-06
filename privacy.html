@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>개인정보 처리방침 — ClaudeQueue</title>
-<meta name="description" content="ClaudeQueue 개인정보 처리방침. 사용자 데이터를 수집하지 않습니다.">
+<title>개인정보 처리방침 — CmdQ</title>
+<meta name="description" content="CmdQ 개인정보 처리방침. 사용자 데이터를 수집하지 않습니다.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171B22'/%3E%3Crect x='7' y='8' width='18' height='3.4' rx='1.7' fill='%23E0805B'/%3E%3Crect x='7' y='14.3' width='13' height='3.4' rx='1.7' fill='%237C8AA5'/%3E%3Crect x='7' y='20.6' width='9' height='3.4' rx='1.7' fill='%23556072'/%3E%3C/svg%3E">
 <style>
@@ -45,7 +45,7 @@ code{font-family:var(--mono);font-size:.92em;word-break:break-all}
 .topbar{border-bottom:1px solid var(--border);background:var(--surface)}
 .topbar .wrap{display:flex;align-items:center;height:56px;gap:16px}
 .brand{font-weight:700;font-size:15px}
-.brand .q{color:var(--accent)}
+.brand-q{color:var(--accent)}
 .back{margin-left:auto;font-size:13.5px;display:inline-flex;align-items:center;min-height:24px;padding:0 8px}
 header.doc{padding:48px 0 28px;border-bottom:1px solid var(--border)}
 h1{font-size:clamp(24px,4vw,34px);letter-spacing:-.02em;font-weight:750}
@@ -80,7 +80,7 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
 
 <div class="topbar">
   <div class="wrap">
-    <span class="brand">Claude<span class="q">Queue</span></span>
+    <span class="brand">Cmd<span class="brand-q">Q</span></span>
     <a class="back" href="./">← 홈으로</a>
   </div>
 </div>
@@ -88,14 +88,14 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
 <header class="doc">
   <div class="wrap">
     <h1>개인정보 처리방침</h1>
-    <p class="lede">ClaudeQueue는 사용자 개인정보를 수집하지 않습니다.</p>
+    <p class="lede">CmdQ는 사용자 개인정보를 수집하지 않습니다.</p>
   </div>
 </header>
 
 <section>
   <div class="wrap">
     <h2>수집하는 데이터</h2>
-    <p><b>없습니다.</b> ClaudeQueue는 사용자 데이터를 외부로 전송하지 않습니다.</p>
+    <p><b>없습니다.</b> CmdQ는 사용자 데이터를 외부로 전송하지 않습니다.</p>
     <p style="margin-top:12px">
       메뉴에서 <b>버그 제보</b>나 <b>기능 요청</b>을 누르면 GitHub의 새 이슈 화면이 브라우저에서 열립니다.
       이때 주소에는 앱 버전, macOS 버전, 아키텍처 세 가지만 담기고 경로나 큐 내용, 로그는 담기지 않습니다.
@@ -109,7 +109,7 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
     <h2>데이터 저장</h2>
     <p>모든 작업 기록과 설정은 사용자 컴퓨터에만 저장됩니다.</p>
     <dl class="kv">
-      <dt>저장 위치</dt><dd>~/Library/Application Support/com.doitasap.claudequeue/</dd>
+      <dt>저장 위치</dt><dd>~/Library/Application Support/com.doitasap.cmdq/</dd>
       <dt>형식</dt><dd>SQLite 데이터베이스</dd>
       <dt>외부 전송</dt><dd>없음 (제보 링크를 열 때 주소에 담겨 GitHub으로 가는 환경 정보는 위 설명 참고)</dd>
     </dl>
@@ -124,7 +124,7 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
     <p style="margin-top:12px">
       사용량 스냅샷에는 Claude Code가 statusline에 넘기는 입력 JSON이 통째로 저장됩니다. 여기에는
       작업 폴더 경로(cwd), 세션 ID, 대화 기록 파일 경로(transcript_path), 모델 이름이 들어 있을 수
-      있습니다. ClaudeQueue는 그중 사용량 한도(<code>rate_limits</code>) 값만 읽습니다.
+      있습니다. CmdQ는 그중 사용량 한도(<code>rate_limits</code>) 값만 읽습니다.
     </p>
   </div>
 </section>
@@ -132,7 +132,7 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
 <section>
   <div class="wrap">
     <h2>네트워크 통신</h2>
-    <p>ClaudeQueue가 직접 보내는 요청은 <b>업데이트 확인 한 가지</b>입니다.</p>
+    <p>CmdQ가 직접 보내는 요청은 <b>업데이트 확인 한 가지</b>입니다.</p>
     <dl class="kv">
       <dt>요청 대상</dt><dd>github.com (릴리스 정보)</dd>
       <dt>보내는 내용</dt><dd>없음 — 파일을 내려받기만 합니다</dd>
@@ -145,7 +145,7 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
     </div>
     <p style="margin-top:14px">
       그 밖에 사용자가 실행한 Claude Code CLI 명령이 발생시키는 통신은 <b>공식 CLI가 수행하는
-      것</b>이며 ClaudeQueue의 통신이 아닙니다.
+      것</b>이며 CmdQ의 통신이 아닙니다.
     </p>
   </div>
 </section>
@@ -153,7 +153,7 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
 <section>
   <div class="wrap">
     <h2>인증 정보</h2>
-    <p>ClaudeQueue는 다음을 <b>수행하지 않습니다</b>.</p>
+    <p>CmdQ는 다음을 <b>수행하지 않습니다</b>.</p>
     <ul class="list no">
       <li>OAuth 토큰 또는 API 키 읽기</li>
       <li>인증 정보 저장 또는 전송</li>
@@ -184,7 +184,7 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
     <h2>문의</h2>
     <p>
       개인정보 처리에 관한 질문이나 우려가 있으시면
-      <a href="https://github.com/doitasap/claude-queue-releases/issues/new/choose">GitHub 이슈</a>로 알려 주십시오.
+      <a href="https://github.com/doitasap/cmd-queue-releases/issues/new/choose">GitHub 이슈</a>로 알려 주십시오.
       보고하실 때 <b>Privacy</b> 레이블을 달아 주시면 빠르게 확인합니다.
     </p>
   </div>
@@ -193,8 +193,8 @@ footer a{padding:0 8px;display:inline-flex;align-items:center;min-height:24px}
 <footer>
   <div class="wrap">
     <a href="./">홈</a>
-    <a href="https://github.com/doitasap/claude-queue-releases">GitHub</a>
-    <a href="https://github.com/doitasap/claude-queue-releases/issues">이슈</a>
+    <a href="https://github.com/doitasap/cmd-queue-releases">GitHub</a>
+    <a href="https://github.com/doitasap/cmd-queue-releases/issues">이슈</a>
   </div>
 </footer>
 

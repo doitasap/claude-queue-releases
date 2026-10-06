@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ClaudeQueue — 경로별 Claude Code 명령 대기열</title>
+<title>CmdQ — 경로별 Claude Code 명령 대기열</title>
 <meta name="description" content="자리에 없어도, 리셋되는 순간 큐가 대신 일한다. Claude Code 작업을 경로별로 큐에 넣어 실행하는 macOS 앱. 같은 경로는 차례대로, 다른 경로는 함께 실행합니다.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171B22'/%3E%3Crect x='7' y='8' width='18' height='3.4' rx='1.7' fill='%23E0805B'/%3E%3Crect x='7' y='14.3' width='13' height='3.4' rx='1.7' fill='%237C8AA5'/%3E%3Crect x='7' y='20.6' width='9' height='3.4' rx='1.7' fill='%23556072'/%3E%3C/svg%3E">
@@ -58,7 +58,7 @@ code,kbd{font-family:var(--mono);font-size:.92em}
 }
 .topbar .wrap{display:flex;align-items:center;gap:16px;height:56px}
 .brand{font-weight:700;letter-spacing:-.01em;font-size:15px;flex-shrink:0}
-.brand .q{color:var(--accent)}
+.brand-q{color:var(--accent)}
 .topnav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
 .topnav::-webkit-scrollbar{display:none}
 .topnav a{
@@ -231,6 +231,8 @@ dl.kv dd{color:var(--text-dim);font-family:var(--mono);font-size:13px;word-break
 footer{padding:36px 0 48px;color:var(--muted);font-size:13.5px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;justify-content:center}
 footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 8px}
+footer .legal{display:block;max-width:760px;margin-top:16px;text-align:center;font-size:12.5px;line-height:1.6}
+footer .legal p + p{margin-top:6px}
 
 /* ── 반응형 ─────────────────────────────────────────── */
 @media (max-width:980px){
@@ -260,7 +262,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
 
 <div class="topbar">
   <div class="wrap">
-    <span class="brand">Claude<span class="q">Queue</span></span>
+    <span class="brand">Cmd<span class="brand-q">Q</span></span>
     <nav class="topnav" aria-label="문서 목차">
       <a href="#start">시작하기</a>
       <a href="#concept">핵심 개념</a>
@@ -284,14 +286,14 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <span class="eyebrow">macOS · 개발자 도구</span>
       <h1>자리에 없어도,<br>리셋되는 순간 큐가 대신 일한다</h1>
       <p class="lede">
-        ClaudeQueue는 여러 프로젝트 경로의 Claude Code 작업을 대기열에 넣어 실행합니다.
+        CmdQ는 여러 프로젝트 경로의 Claude Code 작업을 대기열에 넣어 실행합니다.
         같은 경로는 차례대로, 다른 경로는 기본 세 곳까지 함께 진행합니다.
         사용 한도에 걸린 작업은 실패로 끝나지 않고 리셋 시각에 스스로 재개됩니다.
       </p>
       <div class="cta">
-        <a class="btn btn-primary" href="https://github.com/doitasap/claude-queue-releases/releases/latest">macOS용 다운로드</a>
+        <a class="btn btn-primary" href="https://github.com/doitasap/cmd-queue-releases/releases/latest">macOS용 다운로드</a>
         <a class="btn btn-ghost" href="#start">3분 만에 시작하기</a>
-        <a class="btn btn-ghost" href="https://github.com/doitasap/claude-queue-releases">★ GitHub에서 Star 주기</a>
+        <a class="btn btn-ghost" href="https://github.com/doitasap/cmd-queue-releases">★ GitHub에서 Star 주기</a>
       </div>
       <p class="req">
         macOS 12 이상 · <a href="https://code.claude.com/docs/en/setup">Claude Code CLI</a> 선설치 필요 —
@@ -300,7 +302,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
     </div>
 
     <div class="mock" aria-hidden="true">
-      <div class="mock-bar"><i></i><i></i><i></i><span>ClaudeQueue</span></div>
+      <div class="mock-bar"><i></i><i></i><i></i><span>CmdQ</span></div>
       <div class="mock-head">
         <div class="ring"><b>62%</b></div>
         <div>
@@ -362,7 +364,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       </div>
     </div>
     <div class="callout">
-      <b>ClaudeQueue는 이 세 가지를 하나의 대기열로 묶습니다.</b>
+      <b>CmdQ는 이 세 가지를 하나의 대기열로 묶습니다.</b>
       한도에 걸린 항목은 <span class="badge b-wait"><span class="dot"></span>리셋 대기</span>로 남았다가
       자동으로 재개됩니다. 처음부터 다시 하지 않고 멈춘 세션에서 이어서 진행합니다.
       순서는 큐가 지키고, 확정되지 않은 작업은 따로 보관됩니다.
@@ -383,7 +385,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
         <div class="step-n">1</div>
         <div class="step-body">
           <h3>Claude Code CLI 설치</h3>
-          <p>세 가지 방법 중 편한 것을 고르시면 됩니다. ClaudeQueue는 이 CLI를 실행합니다.</p>
+          <p>세 가지 방법 중 편한 것을 고르시면 됩니다. CmdQ는 이 CLI를 실행합니다.</p>
           <div class="cmd"><code id="c1">curl -fsSL https://claude.ai/install.sh | bash</code><button class="copy" data-copy="c1" type="button">복사</button></div>
           <div class="cmd"><code id="c2">brew install --cask claude-code</code><button class="copy" data-copy="c2" type="button">복사</button></div>
           <div class="cmd"><code id="c3">npm install -g @anthropic-ai/claude-code</code><button class="copy" data-copy="c3" type="button">복사</button></div>
@@ -397,13 +399,20 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <div class="step">
         <div class="step-n">2</div>
         <div class="step-body">
-          <h3>ClaudeQueue 설치 후 첫 실행</h3>
+          <h3>CmdQ 설치 후 첫 실행</h3>
           <p>
             DMG를 내려받아 응용 프로그램 폴더로 옮긴 뒤 실행합니다. CLI를 찾지 못하면 앱이 설치 안내
             화면을 먼저 띄우고, 설치를 마치고 <b>다시 확인</b>을 누르면 다음으로 넘어갑니다.
           </p>
           <p style="margin-top:8px">
             CLI를 특이한 위치에 설치했다면 설정에서 <code>claude.bin</code>에 절대 경로를 지정하시면 됩니다.
+          </p>
+          <div class="callout warn" style="margin-top:12px">
+            <p>큐에 넣은 작업은 Claude Code를 --dangerously-skip-permissions로 실행합니다. Claude Code가 대상 폴더에서 확인 없이 파일을 읽고, 쓰고, 지우며 명령을 실행합니다. 넣는 작업을 검토하고, 작업물은 버전 관리로 보호하고, 바뀌어도 되는 폴더에서만 사용해 주십시오. 실행한 작업의 결과는 사용자 책임입니다.</p>
+            <p lang="en" style="margin-top:8px">Queued tasks run Claude Code with --dangerously-skip-permissions. Claude Code will read, write, and delete files and run commands in the target folder without asking you first. Review what you queue, keep your work under version control, and use this app only on folders you are willing to let it change. You are responsible for the results of the tasks you run.</p>
+          </div>
+          <p style="margin-top:8px">
+            처음 실행하면 앱이 이 고지를 보여 주고 동의를 받습니다. 동의하기 전에는 큐 실행과 터미널 실행이 시작되지 않습니다.
           </p>
         </div>
       </div>
@@ -1153,7 +1162,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
 
     <dl class="kv">
       <dt>설정 파일</dt>
-      <dd>~/Library/Application Support/com.doitasap.claudequeue/config.toml</dd>
+      <dd>~/Library/Application Support/com.doitasap.cmdq/config.toml</dd>
     </dl>
 
     <div class="callout" style="margin-bottom:20px">
@@ -1377,7 +1386,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <p style="color:var(--text-dim);font-size:14.5px">
         공식 배포본은 Apple Developer ID로 서명하고 공증받아 이 경고가 뜨지 않습니다.
         이 메시지가 보인다면 내려받은 파일이 손상됐거나 공식 배포본이 아닐 수 있으니,
-        <a href="https://github.com/doitasap/claude-queue-releases/releases/latest">GitHub 릴리스</a>에서 다시 받으십시오.
+        <a href="https://github.com/doitasap/cmd-queue-releases/releases/latest">GitHub 릴리스</a>에서 다시 받으십시오.
       </p>
     </div>
   </div>
@@ -1412,7 +1421,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
     </div>
     <div class="callout">
       모든 인증 · 네트워크 통신 · Claude 호출은 <b>공식 Claude Code CLI가 담당</b>합니다.
-      ClaudeQueue는 그 CLI를 언제 어떤 순서로 실행할지만 관리합니다.
+      CmdQ는 그 CLI를 언제 어떤 순서로 실행할지만 관리합니다.
     </div>
   </div>
 </section>
@@ -1427,7 +1436,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
       <div class="card">
         <h3>수집하는 데이터가 없습니다</h3>
         <dl class="kv">
-          <dt>저장 위치</dt><dd>~/Library/Application Support/com.doitasap.claudequeue/</dd>
+          <dt>저장 위치</dt><dd>~/Library/Application Support/com.doitasap.cmdq/</dd>
           <dt>외부 전송</dt><dd>없음</dd>
           <dt>제3자 제공</dt><dd>없음</dd>
         </dl>
@@ -1439,7 +1448,7 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
         <h3>지원 플랫폼</h3>
         <p style="color:var(--text-dim);font-size:14.5px">
           현재 <b>macOS 12 이상</b>만 지원합니다. Windows·Linux 지원이 필요하시면
-          <a href="https://github.com/doitasap/claude-queue-releases/issues/new/choose">GitHub 이슈</a>로 알려 주십시오.
+          <a href="https://github.com/doitasap/cmd-queue-releases/issues/new/choose">GitHub 이슈</a>로 알려 주십시오.
           요청이 모이면 우선순위를 조정합니다.
         </p>
       </div>
@@ -1449,12 +1458,16 @@ footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 
 
 <footer>
   <div class="wrap">
-    <span>ClaudeQueue</span>
-    <a href="https://github.com/doitasap/claude-queue-releases">GitHub</a>
-    <a href="https://github.com/doitasap/claude-queue-releases/issues">이슈</a>
-    <a href="https://github.com/doitasap/claude-queue-releases/releases/latest">릴리스</a>
+    <span>Cmd<span class="brand-q">Q</span></span>
+    <a href="https://github.com/doitasap/cmd-queue-releases">GitHub</a>
+    <a href="https://github.com/doitasap/cmd-queue-releases/issues">이슈</a>
+    <a href="https://github.com/doitasap/cmd-queue-releases/releases/latest">릴리스</a>
     <a href="privacy.html">개인정보 처리방침</a>
-    <a href="https://github.com/doitasap/claude-queue-releases/blob/master/LICENSE">라이선스</a>
+    <a href="https://github.com/doitasap/cmd-queue-releases/blob/master/LICENSE">라이선스</a>
+  </div>
+  <div class="wrap legal">
+    <p>CmdQ는 독립 제품이며 Anthropic과 제휴 관계가 없고, Anthropic의 보증이나 후원을 받지 않았습니다. Claude와 Claude Code는 Anthropic, PBC의 상표입니다. Claude Code 사용에는 사용자 본인 계정과 Usage Policy를 포함한 Anthropic 약관이 적용됩니다.</p>
+    <p lang="en">CmdQ is an independent product and is not affiliated with, endorsed by, or sponsored by Anthropic. Claude and Claude Code are trademarks of Anthropic, PBC. Your use of Claude Code is governed by your own account and Anthropic's terms, including the Usage Policy.</p>
   </div>
 </footer>
 
