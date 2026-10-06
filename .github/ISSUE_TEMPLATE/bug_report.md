@@ -30,7 +30,7 @@ assignees: ""
 사용 중인 환경 정보를 작성해주세요.
 
 - **macOS 버전**: (예: macOS 14.5 Sonoma)
-- **ClaudeQueue 버전**: (예: v0.1.0 — 메뉴 막대 → 정보에서 확인)
+- **CmdQ 버전**: (예: v0.1.0 — 메뉴 막대 → 정보에서 확인)
 - **아키텍처**: (예: arm64 / x86_64)
 - **Claude Code CLI 버전**: (터미널에서 `claude --version` 실행 결과)
 - **실행 대상**: (경로 대상 / 세션 대상 / 하위 항목 중 해당하는 것)
@@ -43,7 +43,7 @@ assignees: ""
 로그는 아래 경로에 날짜별로 쌓입니다.
 
 ```
-~/Library/Application Support/com.doitasap.claudequeue/logs/
+~/Library/Application Support/com.doitasap.cmdq/logs/
 ```
 
 > ⚠️ 로그와 스크린샷에 **경로·명령 내용이 그대로 담길 수 있습니다.** 공개하기 곤란한

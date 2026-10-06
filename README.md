@@ -1,23 +1,23 @@
-# ClaudeQueue — 배포
+# CmdQ — 배포
 
 경로별 Claude Code 명령 대기열 데스크톱 앱 (macOS)
 
-[![GitHub stars](https://img.shields.io/github/stars/doitasap/claude-queue-releases?style=social)](https://github.com/doitasap/claude-queue-releases)
+[![GitHub stars](https://img.shields.io/github/stars/doitasap/cmd-queue-releases?style=social)](https://github.com/doitasap/cmd-queue-releases)
 
-**[다운로드 및 사용 가이드 →](https://doitasap.github.io/claude-queue-releases/)**
+**[다운로드 및 사용 가이드 →](https://doitasap.github.io/cmd-queue-releases/)**
 
 ---
 
 ## 이 저장소는
 
-ClaudeQueue의 **배포 창구**입니다. 릴리스 파일과 사용 가이드, 이슈 트래커를 제공합니다.
+CmdQ의 **배포 창구**입니다. 릴리스 파일과 사용 가이드, 이슈 트래커를 제공합니다.
 애플리케이션 소스 코드는 비공개로 관리합니다.
 
 | 무엇을 | 어디서 |
 |---|---|
-| 내려받기 | [Releases](https://github.com/doitasap/claude-queue-releases/releases/latest) |
-| 사용 가이드 | [문서 페이지](https://doitasap.github.io/claude-queue-releases/) |
-| 버그 신고 · 기능 제안 | [Issues](https://github.com/doitasap/claude-queue-releases/issues) |
+| 내려받기 | [Releases](https://github.com/doitasap/cmd-queue-releases/releases/latest) |
+| 사용 가이드 | [문서 페이지](https://doitasap.github.io/cmd-queue-releases/) |
+| 버그 신고 · 기능 제안 | [Issues](https://github.com/doitasap/cmd-queue-releases/issues) |
 
 ## 요구사항
 

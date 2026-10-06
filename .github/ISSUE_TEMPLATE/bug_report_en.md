@@ -30,7 +30,7 @@ Example:
 Tell us about your environment.
 
 - **macOS version**: (e.g. macOS 14.5 Sonoma)
-- **ClaudeQueue version**: (e.g. v0.1.0 — menu bar → About)
+- **CmdQ version**: (e.g. v0.1.0 — menu bar → About)
 - **Architecture**: (e.g. arm64 / x86_64)
 - **Claude Code CLI version**: (output of `claude --version`)
 - **Target**: (path / session / sub-item)
@@ -43,7 +43,7 @@ Attach any related screenshots or logs. (Optional)
 Logs are saved by date in the folder below.
 
 ```
-~/Library/Application Support/com.doitasap.claudequeue/logs/
+~/Library/Application Support/com.doitasap.cmdq/logs/
 ```
 
 > ⚠️ Logs and screenshots **may contain file paths and command text as is.** Please redact
