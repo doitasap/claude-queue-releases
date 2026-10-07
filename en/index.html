@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CmdQ — A per-path command queue for Claude Code</title>
+<meta name="description" content="CmdQ is a macOS app that queues Claude Code tasks by project path. Tasks in the same path run in order, different paths run side by side, and work that hits the usage limit resumes when the limit resets.">
+<meta name="color-scheme" content="light dark">
+<link rel="canonical" href="https://doitasap.github.io/cmd-queue-releases/en/">
+<link rel="alternate" hreflang="ko" href="https://doitasap.github.io/cmd-queue-releases/">
+<link rel="alternate" hreflang="en" href="https://doitasap.github.io/cmd-queue-releases/en/">
+<link rel="alternate" hreflang="x-default" href="https://doitasap.github.io/cmd-queue-releases/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171B22'/%3E%3Crect x='7' y='8' width='18' height='3.4' rx='1.7' fill='%23E0805B'/%3E%3Crect x='7' y='14.3' width='13' height='3.4' rx='1.7' fill='%237C8AA5'/%3E%3Crect x='7' y='20.6' width='9' height='3.4' rx='1.7' fill='%23556072'/%3E%3C/svg%3E">
+<style>
+/* ── 토큰: 라이트 기본 ───────────────────────────────── */
+:root{
+  --bg:#F4F6F9; --surface:#FFFFFF; --elevated:#FFFFFF; --border:#E2E7EF;
+  --text:#1B2430; --text-dim:#5C6675; --muted:#626D7D; --accent:#A8482A; --on-accent:#FFFFFF;
+  --run:#16A34A; --wait:#D08700; --queue:#64748B; --done:#94A3B8; --error:#DC2626;
+  --shadow:0 1px 2px rgba(27,36,48,.06),0 4px 16px rgba(27,36,48,.05);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1116; --surface:#171B22; --elevated:#1E242D; --border:#262D38;
+    --text:#E6EAF0; --text-dim:#9AA4B2; --muted:#8B95A5; --accent:#E0805B; --on-accent:#14181F;
+    --run:#4ADE80; --wait:#F5B544; --queue:#7C8AA5; --done:#556072; --error:#F87171;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1116; --surface:#171B22; --elevated:#1E242D; --border:#262D38;
+  --text:#E6EAF0; --text-dim:#9AA4B2; --muted:#8B95A5; --accent:#E0805B; --on-accent:#14181F;
+  --run:#4ADE80; --wait:#F5B544; --queue:#7C8AA5; --done:#556072; --error:#F87171;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+}
+:root[data-theme="light"]{
+  --bg:#F4F6F9; --surface:#FFFFFF; --elevated:#FFFFFF; --border:#E2E7EF;
+  --text:#1B2430; --text-dim:#5C6675; --muted:#626D7D; --accent:#A8482A; --on-accent:#FFFFFF;
+  --run:#16A34A; --wait:#D08700; --queue:#64748B; --done:#94A3B8; --error:#DC2626;
+  --shadow:0 1px 2px rgba(27,36,48,.06),0 4px 16px rgba(27,36,48,.05);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+/* 고정 상단바에 가리지 않게 앵커 대상 위에 여백을 둔다 */
+[id]{scroll-margin-top:72px}
+body{
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg); color:var(--text); line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code,kbd{font-family:var(--mono);font-size:.92em}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ── 상단 바 ─────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--border);
+}
+.topbar .wrap{display:flex;align-items:center;gap:16px;height:56px}
+.brand{font-weight:700;letter-spacing:-.01em;font-size:15px;flex-shrink:0}
+.brand-q{color:var(--accent)}
+.topnav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav a{
+  color:var(--text-dim);font-size:13.5px;padding:8px 10px;border-radius:8px;
+  white-space:nowrap;min-height:32px;display:flex;align-items:center;
+}
+.topnav a:hover{background:var(--surface);color:var(--text);text-decoration:none}
+/* 현재 메뉴는 색만으로 구분하지 않고 굵기와 밑줄을 함께 쓴다 */
+.topnav a[aria-current]{color:var(--text);font-weight:700;box-shadow:inset 0 -2px 0 var(--accent);border-radius:8px 8px 0 0}
+.lang{
+  color:var(--text-dim);font-size:13.5px;padding:8px 10px;border-radius:8px;
+  white-space:nowrap;min-height:36px;display:flex;align-items:center;flex-shrink:0;
+}
+.lang:hover{background:var(--surface);color:var(--text);text-decoration:none}
+.tbtn{
+  background:var(--surface);border:1px solid var(--border);color:var(--text-dim);
+  min-width:36px;min-height:36px;border-radius:9px;cursor:pointer;font-size:14px;
+  display:grid;place-items:center;flex-shrink:0;transition:border-color .15s,color .15s;
+}
+.tbtn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── Hero ───────────────────────────────────────────── */
+.hero{padding:64px 0 56px;border-bottom:1px solid var(--border)}
+.hero-grid{display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:center}
+.hero-grid>*{min-width:0}
+.eyebrow{
+  display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;
+  color:var(--accent);border:1px solid var(--border);background:var(--surface);
+  padding:4px 10px;border-radius:999px;margin-bottom:18px;
+}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.2;letter-spacing:-.02em;font-weight:750}
+.lede{font-size:clamp(15px,2vw,17.5px);color:var(--text-dim);margin-top:16px;max-width:34em}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 22px;border-radius:10px;font-weight:600;font-size:15px;
+  min-height:44px;border:1px solid transparent;cursor:pointer;transition:opacity .15s,border-color .15s;
+}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{opacity:.9;text-decoration:none}
+.btn-ghost{background:var(--surface);border-color:var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.req{margin-top:16px;font-size:13.5px;color:var(--muted)}
+.req code{color:var(--text-dim)}
+
+/* ── 앱 목업 ─────────────────────────────────────────── */
+.mock{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  box-shadow:var(--shadow);overflow:hidden;font-size:12.5px;
+}
+.mock-bar{
+  display:flex;align-items:center;gap:6px;padding:10px 12px;
+  border-bottom:1px solid var(--border);background:var(--elevated);
+}
+.mock-bar i{width:10px;height:10px;border-radius:50%;background:var(--border);display:block}
+.mock-bar span{margin-left:8px;color:var(--muted);font-size:11.5px}
+.mock-head{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.ring{
+  width:52px;height:52px;border-radius:50%;flex-shrink:0;
+  background:conic-gradient(var(--accent) 0 62%,var(--border) 62% 100%);
+  display:grid;place-items:center;
+}
+.ring b{
+  width:38px;height:38px;border-radius:50%;background:var(--surface);
+  display:grid;place-items:center;font-size:11.5px;font-weight:700;font-family:var(--mono);
+}
+.mock-head dl dt{font-size:11px;color:var(--muted)}
+.mock-head dl dd{font-size:13px;font-family:var(--mono);color:var(--text)}
+.mock-head dl+dl{margin-top:6px}
+.mock-sec{padding:10px 16px 4px;font-size:11px;color:var(--muted);letter-spacing:.03em}
+.mock-row{
+  display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;
+  padding:9px 16px;border-top:1px solid var(--border);
+}
+.mock-row:first-of-type{border-top:none}
+.n{
+  width:20px;height:20px;border-radius:50%;border:1px solid var(--border);
+  display:grid;place-items:center;font-size:10.5px;color:var(--muted);font-family:var(--mono);
+}
+.mock-row p{min-width:0;font-family:var(--mono);font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mock-row small{display:block;color:var(--muted);font-size:10.5px;font-family:var(--mono)}
+.sub{padding-left:38px !important}
+.sub p::before{content:"↳ ";color:var(--muted)}
+
+/* ── 상태 배지 ───────────────────────────────────────── */
+.badge{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;
+  font-size:11.5px;font-weight:600;white-space:nowrap;border:1px solid transparent;
+}
+.badge .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* 라벨은 본문색으로 읽히게 하고, 상태 구분은 점(비텍스트, 3:1 기준)과 테두리가 맡는다.
+   상태색을 라벨에 직접 쓰면 4.5:1 을 넘기지 못해 색약 사용자에게 읽히지 않는다. */
+.badge{color:var(--text)}
+.b-run{border-color:var(--run)}     .b-run .dot{background:var(--run)}
+.b-wait{border-color:var(--wait)}   .b-wait .dot{background:var(--wait)}
+.b-queue{border-color:var(--queue)} .b-queue .dot{background:var(--queue)}
+.b-done{border-color:var(--done)}   .b-done .dot{background:var(--done)}
+.b-err{border-color:var(--error)}   .b-err .dot{background:var(--error)}
+.b-run .dot{animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor;opacity:1}70%{box-shadow:0 0 0 6px transparent;opacity:.7}100%{box-shadow:0 0 0 0 transparent;opacity:1}}
+
+/* ── 섹션 공통 ───────────────────────────────────────── */
+section{padding:56px 0;border-bottom:1px solid var(--border)}
+.sec-head{margin-bottom:28px}
+.sec-head h2{font-size:clamp(21px,3vw,27px);letter-spacing:-.015em;font-weight:700}
+.sec-head p{color:var(--text-dim);margin-top:8px;max-width:60ch}
+h3{font-size:16.5px;font-weight:650;margin-bottom:8px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+
+/* ── 3분 시작하기 ────────────────────────────────────── */
+.steps{display:grid;gap:16px}
+.step{display:grid;grid-template-columns:32px 1fr;gap:16px;align-items:start}
+.step-n{
+  width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);
+  display:grid;place-items:center;font-weight:700;font-size:14px;font-family:var(--mono);margin-top:2px;
+}
+.step-body{min-width:0}
+.step-body p{color:var(--text-dim);font-size:14.5px}
+
+/* ── 명령 복사 ───────────────────────────────────────── */
+.cmd{
+  display:flex;align-items:center;gap:10px;background:var(--elevated);
+  border:1px solid var(--border);border-radius:8px;padding:9px 10px 9px 14px;margin-top:10px;
+}
+/* flex 자식은 min-width:auto 라 nowrap 내용 너비만큼 부모를 밀어낸다. 0으로 풀어 스크롤에 맡긴다 */
+.cmd code{flex:1;min-width:0;color:var(--text);overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+.cmd code::-webkit-scrollbar{display:none}
+.copy{
+  background:transparent;border:1px solid var(--border);color:var(--text-dim);
+  border-radius:6px;padding:5px 11px;font-size:12px;cursor:pointer;flex-shrink:0;
+  min-height:30px;transition:border-color .15s,color .15s;
+}
+.copy:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── 개념 카드 ───────────────────────────────────────── */
+.concept{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.concept .def{color:var(--text-dim);font-size:14.5px;margin-top:2px}
+.concept .when{
+  margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);
+  font-size:13px;color:var(--muted);
+}
+.concept .when b{color:var(--text-dim);font-weight:600}
+.arrow{text-align:center;color:var(--muted);font-size:13px;padding:12px 0;font-family:var(--mono)}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:660px;font-size:13.5px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{background:var(--elevated);font-weight:650;font-size:12.5px;color:var(--text-dim);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td code{color:var(--accent);white-space:nowrap}
+td.def{color:var(--text-dim)}
+.grp td{background:var(--elevated);font-family:var(--mono);font-weight:600;color:var(--text);font-size:12.5px}
+
+/* ── 콜아웃 ─────────────────────────────────────────── */
+.callout{
+  border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;
+  background:var(--surface);margin-top:18px;font-size:14px;color:var(--text-dim);
+}
+.callout b{color:var(--text)}
+.callout.warn{border-left-color:var(--wait)}
+
+/* ── 목록 ───────────────────────────────────────────── */
+.list{list-style:none;display:grid;gap:9px;margin-top:4px}
+.list li{padding-left:22px;position:relative;color:var(--text-dim);font-size:14.5px}
+.list li::before{position:absolute;left:0;font-weight:700}
+.yes li::before{content:"✓";color:var(--run)}
+.no li::before{content:"✕";color:var(--error)}
+
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px;margin-top:4px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{color:var(--text-dim);font-family:var(--mono);font-size:13px;word-break:break-all}
+
+footer{padding:36px 0 48px;color:var(--muted);font-size:13.5px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;justify-content:center}
+footer .wrap a{display:inline-flex;align-items:center;min-height:24px;padding:0 8px}
+footer .legal{display:block;max-width:760px;margin-top:16px;text-align:center;font-size:12.5px;line-height:1.6}
+footer .legal p + p{margin-top:6px}
+
+/* ── 본문 보조 ─────────────────────────────────────── */
+.card>p{color:var(--text-dim);font-size:14.5px}
+.card>p+p{margin-top:8px}
+ol.list{list-style:decimal;padding-left:20px}
+ol.list li{padding-left:4px}
+.why-item dl{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;margin-top:12px;font-size:14.5px}
+.why-item dt{font-weight:700;font-size:12.5px;color:var(--muted);padding-top:2px}
+.why-item dd{color:var(--text-dim)}
+.why-item dt+dd+dt+dd{color:var(--text)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ── 반응형 ─────────────────────────────────────────── */
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .grid3{grid-template-columns:1fr 1fr}
+}
+/* 메뉴가 한 줄에 다 들어가지 않는 폭(영어판 기준 약 810px 이하)에서는 메뉴를 다음 줄로 내리고,
+   좁은 화면에서도 6개가 모두 보이게 줄바꿈한다. 가로 스크롤로 숨기지 않는다. */
+@media (max-width:860px){
+  .topbar .wrap{flex-wrap:wrap;height:auto;gap:0 8px;padding-top:6px}
+  .topnav{order:3;width:100%;margin-left:0;flex-wrap:wrap;overflow-x:visible}
+  .lang{margin-left:auto}
+  [id]{scroll-margin-top:112px}
+}
+@media (max-width:720px){
+  .wrap{padding:0 18px}
+  .hero{padding:44px 0 40px}
+  section{padding:44px 0}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .topnav a,.lang{min-height:44px}
+  .topnav a{padding:8px}
+  [id]{scroll-margin-top:156px}
+  .btn,.copy,.tbtn{min-height:44px}
+  .copy{min-width:60px}
+  .tbtn{min-width:44px}
+  footer .wrap a{min-height:44px;padding:0 14px}
+  table{font-size:12.5px}
+  th,td{padding:10px 12px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <span class="brand">Cmd<span class="brand-q">Q</span></span>
+    <nav class="topnav" aria-label="Guide contents">
+      <a href="#why" data-panel="why">Why CmdQ</a>
+      <a href="#start" data-panel="start">Get started</a>
+      <a href="#screen" data-panel="usage">Usage</a>
+      <a href="#config" data-panel="config">Settings</a>
+      <a href="#trouble" data-panel="trouble">Troubleshooting</a>
+      <a href="#policy" data-panel="policy">Policy &amp; privacy</a>
+    </nav>
+    <a class="lang" href="../" hreflang="ko" lang="ko">한국어</a>
+    <button class="tbtn" id="theme-toggle" type="button" aria-label="Toggle theme">◑</button>
+  </div>
+</div>
+
+<!-- ══ Hero ══════════════════════════════════════════ -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">macOS · Developer tool</span>
+      <h1>Step away.<br>The queue gets back to work the moment your limit resets</h1>
+      <p class="lede">
+        CmdQ queues Claude Code tasks for your project folders and runs them for you.
+        Tasks in the same path run one after another, and up to three paths run at the same time by default.
+        A task that hits the usage limit doesn't fail. It waits and picks up again when the limit resets.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/doitasap/cmd-queue-releases/releases/latest">Download for macOS</a>
+        <a class="btn btn-ghost" href="#start">Get started in 3 minutes</a>
+        <a class="btn btn-ghost" href="https://github.com/doitasap/cmd-queue-releases">★ Star on GitHub</a>
+      </div>
+      <p class="req">
+        Requires macOS 12 or later and the <a href="https://code.claude.com/docs/en/setup">Claude Code CLI</a>.
+        CmdQ runs the official CLI and never calls Claude on its own.
+      </p>
+    </div>
+
+    <div class="mock" aria-hidden="true">
+      <div class="mock-bar"><i></i><i></i><i></i><span>CmdQ</span></div>
+      <div class="mock-head">
+        <div class="ring"><b>62%</b></div>
+        <div>
+          <dl><dt>5-hour window</dt><dd>62% used</dd></dl>
+          <dl><dt>Next reset</dt><dd>02:47:11</dd></dl>
+        </div>
+      </div>
+      <p class="mock-sec">Auto queue · runs per path</p>
+      <div class="mock-row">
+        <span class="n">1</span>
+        <p>/deploy staging<small>~/work/api-server</small></p>
+        <span class="badge b-run"><span class="dot"></span>Running</span>
+      </div>
+      <div class="mock-row sub">
+        <span></span>
+        <p>Summarize the test results<small>continues the parent session</small></p>
+        <span class="badge b-queue"><span class="dot"></span>Queued</span>
+      </div>
+      <div class="mock-row">
+        <span class="n">2</span>
+        <p>/code-review<small>~/work/web-client</small></p>
+        <span class="badge b-wait"><span class="dot"></span>Waiting for reset</span>
+      </div>
+      <p class="mock-sec">To Do</p>
+      <div class="mock-row">
+        <span class="n">–</span>
+        <p>Scope the refactor<small>~/work/api-server</small></p>
+        <span class="badge b-done"><span class="dot"></span>Done</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="panel" data-panel="why">
+<!-- ══ Why CmdQ ══════════════════════════════════════ -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Why CmdQ</h2>
+      <p><b>Does it help you get more done? Yes.</b> Claude Code users keep running into three problems. CmdQ was built to remove them.</p>
+    </div>
+    <div class="grid3">
+      <div class="card why-item">
+        <h3>① Time lost to usage limits</h3>
+        <dl>
+          <dt>Before</dt><dd>When you hit the 5-hour or weekly limit, the work stops. You wait for the reset and type the command again.</dd>
+          <dt>With CmdQ</dt><dd>The stopped task stays in <b>Waiting for reset</b> and continues in the same session after the reset. Work moves forward while you're away.</dd>
+        </dl>
+      </div>
+      <div class="card why-item">
+        <h3>② Keeping several projects in order</h3>
+        <dl>
+          <dt>Before</dt><dd>You keep a window open for each project and switch between them to see what has finished.</dd>
+          <dt>With CmdQ</dt><dd>Different paths run at the same time, and tasks in the same path run in order. Link a follow-up task as a <b>chain</b>, and a flow like build → summarize the logs keeps going without you.</dd>
+        </dl>
+      </div>
+      <div class="card why-item">
+        <h3>③ To-dos that live only in your head</h3>
+        <dl>
+          <dt>Before</dt><dd>You remember a command or jot it down, then type it in later.</dd>
+          <dt>With CmdQ</dt><dd>Park it in <b>To Do</b> right away. When it's ready, promote it to the <b>Auto queue</b>.</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="panel" data-panel="start">
+<!-- ══ Get started ═══════════════════════════════════ -->
+<section id="start">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Get started in 3 minutes</h2>
+      <p>Already have the Claude Code CLI? Skip to step 2.</p>
+    </div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-n">1</div>
+        <div class="step-body">
+          <h3>Install the Claude Code CLI</h3>
+          <p>Install it with one of the first three commands. If the last command prints a version number, you're ready.</p>
+          <div class="cmd"><code id="c1">curl -fsSL https://claude.ai/install.sh | bash</code><button class="copy" data-copy="c1" type="button">Copy</button></div>
+          <div class="cmd"><code id="c2">brew install --cask claude-code</code><button class="copy" data-copy="c2" type="button">Copy</button></div>
+          <div class="cmd"><code id="c3">npm install -g @anthropic-ai/claude-code</code><button class="copy" data-copy="c3" type="button">Copy</button></div>
+          <div class="cmd"><code id="c4">claude --version</code><button class="copy" data-copy="c4" type="button">Copy</button></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">2</div>
+        <div class="step-body">
+          <h3>Install CmdQ and open it</h3>
+          <p>
+            Download the DMG, move CmdQ to your Applications folder, and open it. If CmdQ can't find the CLI, it shows install instructions first.
+            Once the CLI is installed, click <b>Check again</b> to continue.
+          </p>
+          <div class="callout warn" style="margin-top:12px">
+            <p>Queued tasks run Claude Code with --dangerously-skip-permissions. Claude Code will read, write, and delete files and run commands in the target folder without asking you first. Review what you queue, keep your work under version control, and use this app only on folders you are willing to let it change. You are responsible for the results of the tasks you run.</p>
+          </div>
+          <p style="margin-top:8px">
+            This notice appears the first time you open CmdQ. The queue and terminals stay off until you click <b>Agree and start</b>.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">3</div>
+        <div class="step-body">
+          <h3>Add your first task</h3>
+          <p>
+            Click <b>+ Folder</b> to open a project tab, then type a command.
+            In the command box, <b>Enter</b> adds it to To Do and <b>⌘Enter</b> adds it to the auto queue.
+            Wherever the focus is, pressing <b>/</b> moves focus to the command box.
+            A pasted image shows up as <code>[IMAGE]</code>, and CmdQ passes it along when the command runs.
+          </p>
+          <p style="margin-top:8px">
+            Type a word that starts with <code>/</code> in the command box to see your skills. Pick one with <b>↑ ↓</b> and insert it with <b>Tab</b>.
+            If you press <b>Enter</b> while the list is open, the command is added as typed, without the skill.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ Core ideas ════════════════════════════════════ -->
+<section id="concept">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Three core ideas</h2>
+    </div>
+
+    <h3 style="margin-bottom:14px">① Two queues</h3>
+    <div class="grid2">
+      <div class="concept">
+        <h3>Auto queue</h3>
+        <p class="def">Runs items from the top down. In the same path, the next item starts only after the one ahead of it finishes.
+        Different paths run at the same time, up to three by default.</p>
+      </div>
+      <div class="concept">
+        <h3>To Do</h3>
+        <p class="def">A list for holding and reviewing work. Items here never run on their own.</p>
+      </div>
+    </div>
+    <p class="arrow">▲ Promote &nbsp;/&nbsp; ▼ Move to To Do: move items between the two queues at any time</p>
+
+    <h3 style="margin:32px 0 14px">② Three kinds of target</h3>
+    <div class="grid3">
+      <div class="concept">
+        <h3>Path</h3>
+        <p class="def">Starts a <b>new session</b> in the project folder you choose.</p>
+      </div>
+      <div class="concept">
+        <h3>Session</h3>
+        <p class="def"><b>Continues</b> an existing Claude session, so the earlier conversation stays in context.</p>
+      </div>
+      <div class="concept">
+        <h3>Interactive</h3>
+        <p class="def">Skips the queue and opens an <b>interactive terminal</b> in the current tab's folder, where you talk to Claude directly.</p>
+      </div>
+    </div>
+
+    <h3 style="margin:32px 0 14px">③ Chains</h3>
+    <div class="card">
+      <p>
+        Drag an item under another item to make a <b>chain</b>. When the parent finishes, the child runs in the parent's session.
+        If the parent fails, the child doesn't run. Open the failed parent in an interactive terminal and send one message. The parent turns Done, and the waiting child runs next.
+        If a child fails, the children after it wait. <b>Re-run</b> the failed child and the chain picks up again.
+      </p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="panel" data-panel="usage">
+<!-- ══ Reading the screen ════════════════════════════ -->
+<section id="screen">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Reading the screen</h2>
+      <p>Every status shows a color and a label together.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption class="vh">Item status</caption>
+        <thead><tr><th scope="col">Status</th><th scope="col">Meaning</th><th scope="col">What happens next</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge b-queue"><span class="dot"></span>Queued</span></td><td class="def">Waiting its turn</td><td class="def">Starts when the item ahead of it in the same path finishes</td></tr>
+          <tr><td><span class="badge b-run"><span class="dot"></span>Running</span></td><td class="def">Claude Code is working on it</td><td class="def">Changes to Done or Failed</td></tr>
+          <tr><td><span class="badge b-wait"><span class="dot"></span>Waiting for reset</span></td><td class="def">Paused at the usage limit (not a failure)</td><td class="def">Continues in the same session after the reset</td></tr>
+          <tr><td><span class="badge b-done"><span class="dot"></span>Done</span></td><td class="def">Finished normally</td><td class="def">Its chained children run next, if it has any</td></tr>
+          <tr><td><span class="badge b-err"><span class="dot"></span>Failed</span></td><td class="def">Ended with an error</td><td class="def">Its chained children don't run</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid2" style="margin-top:28px">
+      <div class="card">
+        <h3>Usage</h3>
+        <p>
+          The header bars show <b>5-hour window</b> and <b>Weekly limit</b> usage, and the ring shows 5-hour usage. <b>Next reset</b> beside them shows the time left until the next reset.
+          The menu bar icon shows the same values.
+          If you hit the weekly limit, <b>Weekly limit · resumes</b> appears, and the queue starts again when the weekly limit resets.
+        </p>
+        <p>
+          On first launch, CmdQ asks once whether to connect the Claude Code statusline. Choose <b>Connect</b> to read usage from the statusline faster.
+          Your existing statusline display stays as it is. Choose <b>Later</b> to rely on <code>/usage</code> checks only. CmdQ won't ask again, and Settings has no option to connect later.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Project tabs and item numbers</h3>
+        <p>
+          A tab shows only the items for its path. Turn on <b>Show all</b> to see the items from every open tab, grouped by path.
+          When you switch tabs, the add form goes back to the <b>Path</b> target and the <b>To Do</b> queue.
+        </p>
+        <p>Closing a tab doesn't delete its items, and auto queue items for that path keep running.</p>
+        <p>A number such as <code>#12</code> is the item's unique ID. Notifications use the same number to point to an item.</p>
+      </div>
+      <div class="card">
+        <h3>Menu bar</h3>
+        <p>
+          Click the icon to see usage, the time until the reset, and the auto queue status. The menu includes <b>Open window</b>, <b>Report a bug</b>, and <b>Quit</b>.
+          <b>Report a bug</b> opens a new GitHub issue in your browser, and you decide whether to submit it.
+        </p>
+        <p>
+          Closing the window doesn't quit CmdQ: it stays in the menu bar and keeps running the auto queue. To stop it completely, choose <b>Quit</b>.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Dots on the icon</h3>
+        <ul class="list">
+          <li><b>Red dot, top right</b>: unread notifications</li>
+          <li><b>Yellow dot, bottom right</b>: an item is waiting for the reset</li>
+          <li><b>Green dot, bottom right</b>: an item or an interactive terminal is running</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ Controls ══════════════════════════════════════ -->
+<section id="controls">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Controls</h2>
+    </div>
+
+    <div class="card">
+      <h3>Drag to reorder or nest</h3>
+      <ol class="list">
+        <li>Drag a <b>Queued</b> or <b>Waiting for reset</b> item up or down to change the run order.</li>
+        <li>Move it to the right while dragging to make it a child (chain) of the item above. Both items must target a path, and chains go one level deep.</li>
+        <li>Dragging is locked while <b>Show all</b> is on. Pick a single tab to drag again.</li>
+      </ol>
+    </div>
+
+    <h3 style="margin:32px 0 12px">Card buttons</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="vh">Card buttons and what they do</caption>
+        <thead><tr><th scope="col">Button</th><th scope="col">What it does</th></tr></thead>
+        <tbody>
+          <tr><td><b>▶</b> Run now (manual)</td><td class="def">Runs an auto queue item right away, out of turn</td></tr>
+          <tr><td><b>▶</b> Promote to the auto queue</td><td class="def">Moves a To Do item to the auto queue. It doesn't start right away</td></tr>
+          <tr><td><b>▶</b> Re-run</td><td class="def">Runs a failed item again</td></tr>
+          <tr><td><b>⏸</b> Stop (move back to queued)</td><td class="def">Stops the run and moves the item to To Do. A chain moves with it, and a <b>Stopping</b> badge shows until it stops</td></tr>
+          <tr><td><b>👁</b> View progress (read-only)</td><td class="def">Shows how far a running auto queue item has gotten</td></tr>
+          <tr><td><b>▽</b> Move to To Do</td><td class="def">Moves a waiting or failed auto queue item to To Do</td></tr>
+          <tr><td><b>✎</b> Edit the command</td><td class="def"><b>⌘Enter</b> saves, <b>Esc</b> cancels</td></tr>
+          <tr><td><b>💬</b> View the response</td><td class="def">Shows the result as <b>Markdown</b> or <b>Raw text</b>. Images and video aren't loaded</td></tr>
+          <tr><td><b>≡</b> Full session history</td><td class="def">The whole conversation in that session</td></tr>
+          <tr><td><b>⌘</b> Run interactively</td><td class="def">Talk to Claude directly in the app's terminal (<a href="#terminal">Interactive terminal</a>). On a <b>Queued</b> item, its command becomes the first message and the item turns Done</td></tr>
+          <tr><td><b>⤺</b> Detach from the chain (run standalone)</td><td class="def">Turns a child into a standalone item</td></tr>
+          <tr><td><b>☆</b> Add to bookmarks</td><td class="def">Pins a finished item's session to your bookmarks (<a href="#bookmarks">Bookmarks</a>)</td></tr>
+          <tr><td><b>🗑</b> Delete</td><td class="def">Deletes the item right away, with no confirmation. Its chained children are deleted too, and any terminal it opened is closed</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      A command that targets a session won't run while that session is busy. Path targets start a new session every time, so they run side by side.
+      Click a command's text to see all of it. Close the view with <b>Esc</b> or by clicking outside it.
+      Click a session chip to copy a <code>cd … &amp;&amp; claude --resume …</code> command.
+      The button next to the chip switches the target between <b>Path</b> and <b>Session</b>. Running and finished items don't have it.
+    </div>
+  </div>
+</section>
+
+<!-- ══ Attachments ═══════════════════════════════════ -->
+<section id="attachments">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Attaching reference material</h2>
+      <p>Attach the files, links, and notes a command is based on. Attachments belong to a session, and every command in that session shares them.</p>
+    </div>
+
+    <div class="card">
+      <ol class="list">
+        <li><b>Attach</b>: use the <b>File</b>, <b>Link</b>, or <b>Memo</b> button in the add bar or the <b>📎</b> button on a card (it opens the drawer). You can also drag files from Finder onto the window. Child commands use the parent card's 📎.</li>
+        <li><b>Use in a command</b>: put <code>[첨부]</code> in a command to pass all of the session's attachments to claude when it runs, or <code>[첨부:3]</code> to pass only that one. Without a marker, no attachments are passed.</li>
+        <li><b>Pick from a list</b>: type <code>#</code> in the command box to open <b>All attachments</b>, <b>Session attachments</b>, and <b>Command attachments</b>. Select several with <b>Space</b> and press <b>Tab</b> to insert their markers. Type <code>@</code> to insert a file or folder path.</li>
+        <li><b>View</b>: in the drawer, read text as <b>Markdown</b> or <b>Raw text</b> and preview images and PDFs. Web links open with your signed-in session. For a link that needs a sign-in, use <b>Save text</b> so claude gets the saved copy.</li>
+      </ol>
+    </div>
+
+    <div class="callout">
+      A session holds up to 10 attachments. Each file can be up to 20 MB by default. For a larger file, use <b>Change in settings</b> to raise the limit.
+      Text over 2 MB isn't previewed, and you get <b>Show file location</b> instead.
+      Attachments are copies the app makes. Deleting the last command that uses the session deletes them too, and your original files stay where they are.
+      An expanded command is capped at 120 KB and memos at 64 KB per command, and a resumed run doesn't get the attachment list again.
+      You can't open <b>Interactive</b> from the add bar while it has attachments or attachment markers, because markers aren't expanded there.
+    </div>
+  </div>
+</section>
+
+<!-- ══ Interactive terminal ══════════════════════════ -->
+<section id="terminal">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Interactive terminal and history</h2>
+      <p>When a task needs back-and-forth instead of the queue, work in the app's terminal.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Opening a terminal and running it in the background</h3>
+        <ul class="list">
+          <li>Click <b>⌘</b> (Run interactively) on a card to open that item's terminal.</li>
+          <li>Choose <b>Interactive</b> as the add bar target to open a new claude terminal without a queue card. What you typed becomes the first message.</li>
+          <li>Choose <b>Session</b>, then click <b>▶ Terminal</b> next to <b>🕐 History</b> to attach to that session directly.</li>
+          <li>Click <b>Run in background</b> to keep the task going after you close the window. Click the <b>Terminal running</b> badge on the card to attach again.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Inside the terminal</h3>
+        <ul class="list">
+          <li>When output stops, you get a <b>Waiting for input</b> notification (<b>Interactive input-wait alert</b> in <a href="#config">Settings</a>).</li>
+          <li>If you hit the usage limit, the terminal closes, and the queue item changes to <b>Waiting for reset</b> and continues after the reset.</li>
+          <li><b>Cmd+click</b> a URL in the terminal to open it in your browser.</li>
+          <li>Click <b>📎 N</b> in the header to see the attachments, then use <b>Insert into terminal</b> or <b>Insert all</b> to paste them into the input line. You press Enter yourself.</li>
+          <li>Click <b>Snippets</b> to open the <b>Shared</b> and <b>This path</b> command lists. Picking one fills the edit area, and <b>Apply</b> runs it.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Background terminal list</h3>
+        <p>
+          The <b>N terminals</b> button in the header (<code>⇧⌘T</code>) lists the live terminals so you can open or terminate them.
+          <b>Terminate all</b> needs a second click. A terminal opened from the list goes back to the list with <code>⌃←</code>.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Progress and session history</h3>
+        <p>
+          <b>👁</b> shows a running item read-only.
+          In <b>Full session history</b>, check the questions you want and save them with <b>🖼 Image</b> or <b>📄 PDF</b>.
+          On a question screen, <b>← Back</b> (<code>⌃←</code>) returns to the list.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ Bookmarks ═════════════════════════════════════ -->
+<section id="bookmarks">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Bookmarks</h2>
+    </div>
+    <div class="card">
+      <p>
+        Click <b>☆</b> on a finished item's card to pin its session, and click <b>☆</b> in the header (<code>⇧⌘B</code>) to open the panel.
+        In each row, <b>▶</b> opens an interactive terminal, <b>🕐</b> shows the session history, <b>✎</b> renames it, <b>✕</b> deletes it, and <b>📎</b> opens the attachment drawer.
+        A bookmark stays even after you delete the original item.
+      </p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="panel" data-panel="config">
+<!-- ══ Settings ══════════════════════════════════════ -->
+<section id="config">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Settings reference</h2>
+      <p>
+        Open Settings with <code>⌘,</code>. The names below match the Settings screen.
+        Items marked <b>↻ Restart</b> take effect after you restart the app.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption class="vh">Settings screen items</caption>
+        <thead><tr><th scope="col">Setting</th><th scope="col">Description</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="2">General</td></tr>
+          <tr><td>Language</td><td class="def">Follow System · 한국어 · English. Applies immediately</td></tr>
+          <tr><td>Theme</td><td class="def">Dark (default) · Light</td></tr>
+          <tr><td>Desktop notifications</td><td class="def">Notifies you when a task finishes, hits a limit, fails, or waits for input</td></tr>
+          <tr><td>Interactive input-wait alert</td><td class="def">Notifies you when output stops for this many seconds. Default 8 seconds, 0 turns it off</td></tr>
+          <tr><td>Start at login</td><td class="def">Opens the app when you log in so it keeps working through the auto queue</td></tr>
+          <tr class="grp"><td colspan="2">Running claude</td></tr>
+          <tr><td>claude executable</td><td class="def">If empty, CmdQ looks for <code>~/.local/bin/claude</code>, then searches <code>PATH</code></td></tr>
+          <tr><td>Claude config folder ↻</td><td class="def">If empty, CmdQ uses <code>CLAUDE_CONFIG_DIR</code> from your login shell, or <code>~/.claude</code> if that isn't set</td></tr>
+          <tr><td>Run check</td><td class="def">Click <b>Check</b> to run the CLI and show its version</td></tr>
+          <tr class="grp"><td colspan="2">Queue execution</td></tr>
+          <tr><td>Queue check interval</td><td class="def">How often the auto queue looks for its next item. Default 15 seconds</td></tr>
+          <tr><td>Auto-queue concurrent runs</td><td class="def">How many items the auto queue runs at once across all paths. It runs one item per path, so this is also how many paths run at the same time. Default 3</td></tr>
+          <tr><td>Concurrent runs per path</td><td class="def">Total automatic and manual runs in one path. Default 2 (1 automatic plus room for a manual run). Use 1 if your tasks edit files</td></tr>
+          <tr><td>Usage check interval</td><td class="def">Default 60 seconds. The menu bar updates on the same interval</td></tr>
+          <tr><td>Usage check timeout</td><td class="def">Time limit for a single usage check. Default 30 seconds</td></tr>
+          <tr class="grp"><td colspan="2">Logs</td></tr>
+          <tr><td>Log folder ↻</td><td class="def">If empty, <code>logs</code> in the app data folder</td></tr>
+          <tr><td>Log level ↻</td><td class="def">Default info. The <code>RUST_LOG</code> environment variable wins if it is set</td></tr>
+          <tr><td>File rotation ↻</td><td class="def">Default Daily</td></tr>
+          <tr><td>Files to keep ↻</td><td class="def">Default 14. The oldest files are deleted first</td></tr>
+          <tr><td>Compress finished run logs</td><td class="def">Compresses a run log this many days after the run finishes. Default 30 days, 0 turns it off</td></tr>
+          <tr><td>Delete finished run logs</td><td class="def">Deletes a run log this many days after the run finishes (the item stays). Default 90 days, 0 turns it off</td></tr>
+          <tr><td>Session history retention (Claude Code)</td><td class="def">Shows Claude Code's <code>cleanupPeriodDays</code> value (30 days by default). CmdQ doesn't change it (<a href="#trouble">Troubleshooting</a>)</td></tr>
+          <tr><td>Config file</td><td class="def"><b>Show in folder</b> reveals <code>config.toml</code> in Finder. <b>Reset</b> restores every setting to its default (queue items and logs are kept)</td></tr>
+          <tr class="grp"><td colspan="2">Attachments</td></tr>
+          <tr><td>Max size per file</td><td class="def">Default 20 MB. Checked only when you add a new attachment</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin:28px 0 12px">Settings only in config.toml</h3>
+    <p style="color:var(--text-dim);font-size:14.5px">
+      Quit the app, then edit <code>~/Library/Application Support/com.doitasap.cmdq/config.toml</code>. If you edit it while the app is running, saving in Settings overwrites your changes.
+      Out-of-range values are moved to the nearest limit. A broken file is backed up as <code>.bak</code>, and the app starts with the defaults.
+    </p>
+    <div class="table-wrap" style="margin-top:12px">
+      <table>
+        <caption class="vh">Keys only in config.toml</caption>
+        <thead><tr><th scope="col">Key</th><th scope="col">Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>claude.extra_paths</code></td><td class="def">Absolute paths to add to the front of PATH. Default <code>[]</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin:28px 0 12px">Shortcuts</h3>
+    <p style="color:var(--text-dim);font-size:14.5px">
+      In the Shortcuts group in Settings, click a key field and press the combination you want. <b>Clear</b> sets it to <b>None</b>, and <b>Default</b> restores the original combination.
+    </p>
+    <div class="table-wrap" style="margin-top:12px">
+      <table>
+        <caption class="vh">Default shortcuts</caption>
+        <thead><tr><th scope="col">Action</th><th scope="col">Default</th></tr></thead>
+        <tbody>
+          <tr><td>Add project</td><td><code>⌘O</code></td></tr>
+          <tr><td>Close current tab</td><td><code>⌘W</code></td></tr>
+          <tr><td>Activate left tab · Activate right tab</td><td><code>⌥⌘←</code> · <code>⌥⌘→</code></td></tr>
+          <tr><td>Move tab left · Move tab right</td><td><code>⇧⌥⌘←</code> · <code>⇧⌥⌘→</code></td></tr>
+          <tr><td>Select path · Select session · Select interactive</td><td><code>⌃1</code> · <code>⌃2</code> · <code>⌃3</code></td></tr>
+          <tr><td>Add snippet</td><td><code>⇧⌘P</code> (inside an interactive terminal only)</td></tr>
+          <tr><td>Show all</td><td><code>⇧⌘A</code></td></tr>
+          <tr><td>Settings</td><td><code>⌘,</code></td></tr>
+          <tr><td>Bookmarks</td><td><code>⇧⌘B</code></td></tr>
+          <tr><td>Terminals</td><td><code>⇧⌘T</code></td></tr>
+          <tr><td>Back</td><td><code>⌃←</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="list" style="margin-top:16px">
+      <li>Shortcuts work only while the app window has focus. When a full-screen modal or an interactive terminal is open, only Settings, Add snippet, Terminals, and Back work.</li>
+      <li>The command box submit keys can't be changed: <code>Enter</code> for To Do, <code>⌘Enter</code>, <code>⌃Enter</code>, or <code>⌃⌘Enter</code> for the auto queue, and <code>Shift+Enter</code> for a new line.</li>
+      <li>If Mission Control's “Move left a space” (<code>⌃←</code>) is turned on, assign Back to a different combination.</li>
+    </ul>
+  </div>
+</section>
+</div>
+
+<div class="panel" data-panel="trouble">
+<!-- ══ Troubleshooting ═══════════════════════════════ -->
+<section id="trouble">
+  <div class="wrap">
+    <div class="sec-head"><h2>Troubleshooting</h2></div>
+    <div class="table-wrap">
+      <table>
+        <caption class="vh">Symptoms, what to check, and fixes</caption>
+        <thead><tr><th scope="col">Symptom</th><th scope="col">Check</th><th scope="col">Fix</th></tr></thead>
+        <tbody>
+          <tr><td>CmdQ says it can't find the CLI</td><td class="def">Run <code>which claude</code> in Terminal</td><td class="def">Enter that absolute path in <b>claude executable</b> in Settings</td></tr>
+          <tr><td>A command can't find a tool such as <code>node</code></td><td class="def">Your login shell's <code>PATH</code></td><td class="def">Add the path to <code>claude.extra_paths</code> (<a href="#config">Settings</a>)</td></tr>
+          <tr><td>An item is stuck at “Waiting · the session is in use”</td><td class="def">An in-app toast says what is using the session: the app's interactive terminal, another queue item, or a terminal or background agent outside the app</td><td class="def">Close that terminal, or wait for the earlier task to finish</td></tr>
+          <tr><td>A notification says two tasks edited the same file</td><td class="def">One change may already have been overwritten</td><td class="def">Open an interactive terminal in that path and give both instructions again, one after the other. To prevent this, set <b>Concurrent runs per path</b> to 1</td></tr>
+          <tr><td>Session history shows <b>Session file not found</b></td><td class="def"><b>Session history retention (Claude Code)</b> in Settings</td><td class="def">Claude Code deleted that session after the retention period (30 days by default). Use View the response to read the app's log</td></tr>
+          <tr><td>Items from the app's previous name are missing</td><td class="def">CmdQ moves that data once on first launch. If the move fails, a toast shows where the old data is</td><td class="def">The original data stays there. If you haven't created new data yet, CmdQ tries again on the next launch</td></tr>
+          <tr><td>After installing, macOS says the app is “damaged” or can't verify the developer</td><td class="def">Release builds are signed with an Apple Developer ID and notarized, so this warning doesn't appear for them</td><td class="def">Download the app again from <a href="https://github.com/doitasap/cmd-queue-releases/releases/latest">GitHub Releases</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="panel" data-panel="policy">
+<!-- ══ How the app works ═════════════════════════════ -->
+<section id="policy">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>How the app works</h2>
+      <p>To comply with Anthropic's third-party policy, this section describes how CmdQ works.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>What the app does</h3>
+        <ul class="list yes">
+          <li><b>Runs the official Claude Code CLI installed on your computer as a process</b></li>
+          <li>Queues tasks from several project paths and runs them in order or at a scheduled time</li>
+          <li>Shows progress in the menu bar and the app window</li>
+          <li>Checks for new versions. It only downloads release information and sends nothing</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What the app doesn't do</h3>
+        <ul class="list no">
+          <li>Access credentials (OAuth tokens, API keys)</li>
+          <li>Store or send credentials</li>
+          <li>Send usage history or task content anywhere</li>
+          <li>Collect or analyze user data</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      All authentication, network traffic, and Claude calls are <b>handled by the official Claude Code CLI</b>.
+      CmdQ only decides when and in what order to run that CLI.
+    </div>
+  </div>
+</section>
+
+<!-- ══ Privacy and platforms ═════════════════════════ -->
+<section id="privacy">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Privacy and supported platforms</h2>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>No data is collected</h3>
+        <dl class="kv">
+          <dt>Stored in</dt><dd>~/Library/Application Support/com.doitasap.cmdq/</dd>
+          <dt>Sent off your Mac</dt><dd>Nothing</dd>
+          <dt>Shared with third parties</dt><dd>Nothing</dd>
+        </dl>
+        <p style="margin-top:14px;font-size:14px">
+          For the details and the technical basis, see the <a href="../privacy.html">Privacy Policy (Korean)</a>.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Supported platforms</h3>
+        <p>
+          CmdQ currently supports <b>macOS 12 or later</b> only. If you need Windows or Linux support,
+          let us know in a <a href="https://github.com/doitasap/cmd-queue-releases/issues/new/choose">GitHub issue</a>.
+          We adjust priorities as requests come in.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Cmd<span class="brand-q">Q</span></span>
+    <a href="https://github.com/doitasap/cmd-queue-releases">GitHub</a>
+    <a href="https://github.com/doitasap/cmd-queue-releases/issues">Issues</a>
+    <a href="https://github.com/doitasap/cmd-queue-releases/releases/latest">Releases</a>
+    <a href="../privacy.html">Privacy Policy (Korean)</a>
+    <a href="https://github.com/doitasap/cmd-queue-releases/blob/master/LICENSE">License</a>
+  </div>
+  <div class="wrap legal">
+    <p>CmdQ is an independent product and is not affiliated with, endorsed by, or sponsored by Anthropic. Claude and Claude Code are trademarks of Anthropic, PBC. Your use of Claude Code is governed by your own account and Anthropic's terms, including the Usage Policy.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem('cq-theme'); } catch (e) {}
+  if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+
+  document.getElementById('theme-toggle').addEventListener('click', function(){
+    var dark = getComputedStyle(root).getPropertyValue('--bg').trim().indexOf('#0E') === 0;
+    var next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('cq-theme', next); } catch (e) {}
+  });
+
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var el = document.getElementById(btn.dataset.copy);
+      if (!el) return;
+      navigator.clipboard.writeText(el.textContent).then(function(){
+        btn.textContent = 'Copied';
+        setTimeout(function(){ btn.textContent = 'Copy'; }, 1200);
+      }).catch(function(){});
+    });
+  });
+})();
+
+// 언어 링크는 문서에 있는 id 해시만 이어 붙인다. 해시는 getElementById 조회에만 쓴다.
+(function(){
+  var lang = document.querySelector('a.lang');
+  if (!lang) return;
+  var base = lang.getAttribute('href');
+  function sync(){
+    var id = '';
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+    lang.setAttribute('href', base + (id && document.getElementById(id) ? location.hash : ''));
+  }
+  sync();
+  window.addEventListener('hashchange', sync);
+})();
+
+// scrollspy: 상단바 아래 기준선에 걸린 패널의 메뉴만 현재 표시한다. 페이지 끝이면 마지막 메뉴.
+(function(){
+  if (!('IntersectionObserver' in window)) return;
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
+  var links = document.querySelectorAll('.topnav a[data-panel]');
+  if (!panels.length) return;
+  var bar = document.querySelector('.topbar');
+  var barH = bar ? bar.offsetHeight : 0;
+  var seen = new Set();
+  var current = null;
+  var io = null;
+
+  function mark(name){
+    if (name === current) return;
+    current = name;
+    links.forEach(function(a){
+      if (a.getAttribute('data-panel') === name) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+  }
+
+  function update(){
+    var atEnd = window.scrollY > 0 &&
+      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    if (atEnd) return mark(panels[panels.length - 1].getAttribute('data-panel'));
+    for (var i = 0; i < panels.length; i++) {
+      if (seen.has(panels[i])) return mark(panels[i].getAttribute('data-panel'));
+    }
+    // 아직 첫 패널에 닿지 않았으면(hero 만 보임) 첫 로드와 같게 표시를 지운다.
+    if (panels[0].getBoundingClientRect().top > barH) mark(null);
+  }
+
+  // 상단바 높이는 브레이크포인트마다 달라지므로, 높이가 바뀌면 기준선을 새로 잡아 다시 관찰한다.
+  function observe(){
+    if (io) io.disconnect();
+    seen.clear();
+    io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) seen.add(e.target); else seen.delete(e.target);
+      });
+      update();
+    }, { rootMargin: '-' + barH + 'px 0px -60% 0px' });
+    panels.forEach(function(p){ io.observe(p); });
+  }
+
+  function onResize(){
+    var h = bar ? bar.offsetHeight : 0;
+    if (h === barH) return;
+    barH = h;
+    observe();
+  }
+
+  observe();
+  window.addEventListener('scroll', update, { passive: true });
+  if (bar && 'ResizeObserver' in window) new ResizeObserver(onResize).observe(bar);
+  else window.addEventListener('resize', onResize);
+})();
+</script>
+</body>
+</html>
