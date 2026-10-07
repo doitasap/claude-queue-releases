@@ -611,7 +611,7 @@ ol.list li{padding-left:4px}
           <tr><td><b>≡</b> Full session history</td><td class="def">The whole conversation in that session</td></tr>
           <tr><td><b>⌘</b> Run interactively</td><td class="def">Talk to Claude directly in the app's terminal (<a href="#terminal">Interactive terminal</a>). On a <b>Queued</b> item, its command becomes the first message and the item turns Done</td></tr>
           <tr><td><b>⤺</b> Detach from the chain (run standalone)</td><td class="def">Turns a child into a standalone item</td></tr>
-          <tr><td><b>☆</b> Add to bookmarks</td><td class="def">Pins a finished item's session to your bookmarks (<a href="#bookmarks">Bookmarks</a>)</td></tr>
+          <tr><td><b>☆</b> Add to bookmarks</td><td class="def">Pins a finished item's session to your bookmarks. The interactive terminal header and the background terminal list have the same ☆ (<a href="#bookmarks">Bookmarks</a>)</td></tr>
           <tr><td><b>🗑</b> Delete</td><td class="def">Deletes the item right away, with no confirmation. Its chained children are deleted too, and any terminal it opened is closed</td></tr>
         </tbody>
       </table>
@@ -707,6 +707,8 @@ ol.list li{padding-left:4px}
     <div class="card">
       <p>
         Click <b>☆</b> on a finished item's card to pin its session, and click <b>☆</b> in the header (<code>⇧⌘B</code>) to open the panel.
+        A session you opened with <b>Interactive</b> or <b>▶ Terminal</b> has no card, but you can still bookmark it with <b>☆</b> in the interactive terminal header or the background terminal list. Its alias is the first line of its first prompt (or the first 8 characters of the session ID if there is none), and its path is the folder it was first opened in.
+        If the session is already bookmarked, <b>☆</b> is lit, and clicking it again removes the bookmark. If attachments would be deleted with it, the app asks first.
         In each row, <b>▶</b> opens an interactive terminal, <b>🕐</b> shows the session history, <b>✎</b> renames it, <b>✕</b> deletes it, and <b>📎</b> opens the attachment drawer.
         A bookmark stays even after you delete the original item, and so do the session's attachments, so you can keep opening and adding to them from 📎.
       </p>
