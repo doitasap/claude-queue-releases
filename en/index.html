@@ -635,7 +635,7 @@ ol.list li{padding-left:4px}
 
     <div class="card">
       <ol class="list">
-        <li><b>Attach</b>: use the <b>File</b>, <b>Link</b>, or <b>Memo</b> button in the add bar or the <b>📎</b> button on a card (it opens the drawer). You can also drag files from Finder onto the window. Child commands use the parent card's 📎.</li>
+        <li><b>Attach</b>: use the <b>File</b>, <b>Link</b>, or <b>Memo</b> button in the add bar or the <b>📎</b> button on a card (it opens the drawer). You can also drag files from Finder onto the window. Child commands use the parent card's 📎. The <b>📎</b> in bookmarks and terminals opens and adds to the same session's attachments, even after the card is deleted and even when there are none yet.</li>
         <li><b>Use in a command</b>: put <code>[첨부]</code> in a command to pass all of the session's attachments to claude when it runs, or <code>[첨부:3]</code> to pass only that one. Without a marker, no attachments are passed.</li>
         <li><b>Pick from a list</b>: type <code>#</code> in the command box to open <b>All attachments</b>, <b>Session attachments</b>, and <b>Command attachments</b>. Select several with <b>Space</b> and press <b>Tab</b> to insert their markers. Type <code>@</code> to insert a file or folder path.</li>
         <li><b>View</b>: in the drawer, read text as <b>Markdown</b> or <b>Raw text</b> and preview images and PDFs. Web links open with your signed-in session. For a link that needs a sign-in, use <b>Save text</b> so claude gets the saved copy.</li>
@@ -645,7 +645,7 @@ ol.list li{padding-left:4px}
     <div class="callout">
       A session holds up to 10 attachments. Each file can be up to 20 MB by default. For a larger file, use <b>Change in settings</b> to raise the limit.
       Text over 2 MB isn't previewed, and you get <b>Show file location</b> instead.
-      Attachments are copies the app makes. Deleting the last command that uses the session deletes them too, and your original files stay where they are.
+      Attachments are copies the app makes. They are deleted once no command, bookmark, or running terminal uses the session, and your original files stay where they are. If deleting a bookmark would delete attachments too, the app asks first and tells you how many.
       An expanded command is capped at 120 KB and memos at 64 KB per command, and a resumed run doesn't get the attachment list again.
       You can't open <b>Interactive</b> from the add bar while it has attachments or attachment markers, because markers aren't expanded there.
     </div>
@@ -675,7 +675,7 @@ ol.list li{padding-left:4px}
           <li>When output stops, you get a <b>Waiting for input</b> notification (<b>Interactive input-wait alert</b> in <a href="#config">Settings</a>).</li>
           <li>If you hit the usage limit, the terminal closes, and the queue item changes to <b>Waiting for reset</b> and continues after the reset.</li>
           <li><b>Cmd+click</b> a URL in the terminal to open it in your browser.</li>
-          <li>Click <b>📎 N</b> in the header to see the attachments, then use <b>Insert into terminal</b> or <b>Insert all</b> to paste them into the input line. You press Enter yourself.</li>
+          <li>Click <b>📎</b> in the header to open the attachment dialog. Like the drawer, it lets you add, delete, reorder, edit memos, and drop files. Use <b>Insert into terminal</b> or <b>Insert all</b> to paste them into the input line. You press Enter yourself.</li>
           <li>Click <b>Snippets</b> to open the <b>Shared</b> and <b>This path</b> command lists. Picking one fills the edit area, and <b>Apply</b> runs it.</li>
         </ul>
       </div>
@@ -708,7 +708,7 @@ ol.list li{padding-left:4px}
       <p>
         Click <b>☆</b> on a finished item's card to pin its session, and click <b>☆</b> in the header (<code>⇧⌘B</code>) to open the panel.
         In each row, <b>▶</b> opens an interactive terminal, <b>🕐</b> shows the session history, <b>✎</b> renames it, <b>✕</b> deletes it, and <b>📎</b> opens the attachment drawer.
-        A bookmark stays even after you delete the original item.
+        A bookmark stays even after you delete the original item, and so do the session's attachments, so you can keep opening and adding to them from 📎.
       </p>
     </div>
   </div>
